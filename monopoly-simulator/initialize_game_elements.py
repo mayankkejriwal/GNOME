@@ -82,7 +82,7 @@ def initialize_board(game_schema, player_decision_agents):
     game_elements['location_sequence'] = location_sequence
 
     color_assets = dict() # we will not put anything in here that does not have a color.
-    for o in location_objects:
+    for o in location_sequence:
         if o.color and o.color in game_schema['players']['player_states']['full_color_sets_possessed'][0]:
             if o.color not in color_assets:
                 color_assets[o.color] = set()
@@ -207,6 +207,7 @@ def initialize_board(game_schema, player_decision_agents):
                 card_args = specific_card.copy()
                 del card_args['num']
                 card_args['action'] = getattr(sys.modules[__name__], specific_card['action'])
+                card_args['contingency'] = getattr(sys.modules[__name__], specific_card['contingency'])
                 card_obj = card.ContingentCashFromBankCard(**card_args)
                 chance_cards.add(card_obj)
 

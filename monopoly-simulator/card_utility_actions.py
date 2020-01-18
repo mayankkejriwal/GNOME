@@ -1,4 +1,3 @@
-import numpy as np
 import sys
 
 
@@ -9,18 +8,18 @@ def go_to_jail(player, current_gameboard):
 
 def pick_card_from_community_chest(player, current_gameboard): # it will pick the card and execute the action
     # get_out_of_jail_free card is treated a little differently, since we must remove it from the card pack.
-    card = np.random.choice(list(current_gameboard['community_chest_cards']))
+    card = current_gameboard['choice_function'](list(current_gameboard['community_chest_cards']))
     if card.name == 'get_out_of_jail_free':
         current_gameboard['community_chest_cards'].remove(card)
-    getattr(sys.modules[__name__], card.action)(player, card, current_gameboard) # all card actions must take this signature
+    card.action(player, card, current_gameboard) # all card actions must take this signature
 
 
 def pick_card_from_chance(player, current_gameboard): # it will pick the card and execute the action
     # get_out_of_jail_free card is treated a little differently, since we must remove it from the card pack.
-    card = np.random.choice(list(current_gameboard['chance_cards']))
+    card = current_gameboard['choice_function'](list(current_gameboard['chance_cards']))
     if card.name == 'get_out_of_jail_free':
         current_gameboard['chance_cards'].remove(card)
-    getattr(sys.modules[__name__], card.action)(player, card, current_gameboard) # all card actions must take this signature
+    card.action(player, card, current_gameboard) # all card actions must take this signature
 
 
 def move_player(player, card, current_gameboard):
@@ -53,7 +52,7 @@ def player_cash_transaction(player, card, current_gameboard):
             if p == player:
                 continue
             if p.status != 'lost':
-                p.receive_cash(card.amount_per_player)
+                p.receive_cash(-1*card.amount_per_player)
                 player.current_cash -= card.amount_per_player
     elif card.amount_per_player > 0:
         for p in current_gameboard['players']:
@@ -65,7 +64,7 @@ def player_cash_transaction(player, card, current_gameboard):
 
 
 def contingent_bank_cash_transaction(player, card, current_gameboard):
-    card.contingency(player) # the contingency function will be one of calculate_street_repair_cost or
+    card.contingency(player, card, current_gameboard) # the contingency function will be one of calculate_street_repair_cost or
     # calculate_general_repair_cost. Except player, their parameters have default values set.
 
 
@@ -91,7 +90,7 @@ def move_to_nearest_utility__pay_or_buy__check_for_go(player, card, current_game
             min_utility_distance = _calculate_board_distance(player.current_position, u)
             min_utility_position = u
 
-    move_player__check_for_go(player, min_utility_position, current_gameboard)
+    _move_player__check_for_go(player, min_utility_position, current_gameboard)
     current_loc = current_gameboard['location_sequence'][player.current_position]
 
     if current_loc.loc_class != 'utility':  # simple check
@@ -144,6 +143,7 @@ def move_player_relative(player, card, current_gameboard):
     move_player_after_die_roll(player, card.new_relative_position, current_gameboard, True)
 
 def move_player_after_die_roll(player, rel_move, current_gameboard, check_for_go=True): # this is a utility function used in gameplay, rather than card draw
+    # it's important to note that if we are 'visiting' in jail, this function will not set the player.currently_in_jail field to True, since it shouldn't.
     num_locations = len(current_gameboard['location_sequence'])
     go_position = current_gameboard['go_position']
     go_increment = current_gameboard['go_increment']

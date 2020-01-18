@@ -1,21 +1,21 @@
-import numpy as np
+
 
 # every function in here that can be called from outside must return a success or failure (I need to modify the returns)
 
-def bid_on_property(player, current_gameboard, asset, current_bid, bidding_strategy_function):
-    # bidding strategy function is what you use to decide what/how to bid. See decision_agent_1 for examples.
-    # make it return 0 (or any number less than current_bid) at any time to drop out.
-    if asset.owned_by != 'bank':
-        print 'bidding can only happen on bank-owned properties!'
-        raise Exception
-    elif player.current_cash <= current_bid:
-        return 0 # player is dropping out of auction
-    else:
-        proposed_bid = bidding_strategy_function(player, current_gameboard, asset, current_bid)
-        if proposed_bid <= current_bid:
-            return 0
-        else:
-            return proposed_bid
+# def bid_on_property(player, current_gameboard, asset, current_bid, bidding_strategy_function):
+#     # bidding strategy function is what you use to decide what/how to bid. See decision_agent_1 for examples.
+#     # make it return 0 (or any number less than current_bid) at any time to drop out.
+#     if asset.owned_by != 'bank':
+#         print 'bidding can only happen on bank-owned properties!'
+#         raise Exception
+#     elif player.current_cash <= current_bid:
+#         return 0 # player is dropping out of auction
+#     else:
+#         proposed_bid = bidding_strategy_function(player, current_gameboard, asset, current_bid)
+#         if proposed_bid <= current_bid:
+#             return 0
+#         else:
+#             return proposed_bid
 
 
 def free_mortgage(player, asset): # if the asset is not mortgage-able (which means it's not own-able, an exception is automatically raised)
@@ -97,7 +97,7 @@ def accept_sell_property_offer(player, current_gameboard):
         return 1
 
 def skip_turn():
-    return 1 # does nothing; code is always a success
+    return 2 # uses special code, since we need it in gameplay
 
 
 def concluded_actions():
@@ -202,8 +202,8 @@ def pay_jail_fine(player): # if you don't have enough cash, you'll stay in jail.
         return -1 # failure to pay fine
 
 
-def roll_die(die_objects):
-    return [np.random.choice(a=d.die_state) for d in die_objects]
+def roll_die(die_objects, choice):
+    return [choice(a=d.die_state) for d in die_objects]
 
 
 def buy_property(player, asset, current_gameboard): # you must have enough cash for this asset + it must belong to the bank
@@ -221,6 +221,7 @@ def buy_property(player, asset, current_gameboard): # you must have enough cash 
     else:
         player.current_cash -= asset.price
         asset.update_asset_owner(player, current_gameboard)
+        player.reset_option_to_buy()
         return 1
 
 

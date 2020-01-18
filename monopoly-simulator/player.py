@@ -92,7 +92,6 @@ class Player(object):
         elif current_location.loc_class == 'real_estate':
             if current_location.owned_by == 'bank':
                 self._option_to_buy = True
-                # self._own_or_auction(current_gameboard, current_location)
                 return
             elif current_location.is_mortgaged is True:
                 return
@@ -105,7 +104,6 @@ class Player(object):
         elif current_location.loc_class == 'railroad':
             if current_location.owned_by == 'bank':
                 self._option_to_buy = True
-                # self._own_or_auction(current_gameboard, current_location)
                 return
             elif current_location.is_mortgaged is True:
                 return
@@ -118,7 +116,6 @@ class Player(object):
         elif current_location.loc_class == 'utility':
             if current_location.owned_by == 'bank':
                 self._option_to_buy = True
-                # self._own_or_auction(current_gameboard, current_location)
                 return
             elif current_location.is_mortgaged is True:
                 return
@@ -164,6 +161,8 @@ class Player(object):
 
     def receive_cash(self, amount):
         if amount < 0:
+            print self.player_name
+            print amount
             print 'stealing detected. Terminating game.'
             raise Exception
         self.current_cash += amount
@@ -179,13 +178,67 @@ class Player(object):
 
     # all of the _allowable_ functions will always return a set of callable actions from action_choices
     # current_gameboard is the current game_elements data structure.
-    def compute_allowable_out_of_turn_actions(self, current_gameboard):
-        pass # to come
+
 
     def compute_allowable_pre_roll_actions(self, current_gameboard):
         allowable_actions = set()
         allowable_actions.add(concluded_actions)
-        pass # to come
+
+        if self.is_property_offer_outstanding is True:
+            allowable_actions.add(accept_sell_property_offer)
+
+        if self.num_total_hotels > 0 or self.num_total_houses > 0:
+            allowable_actions.add(sell_house_hotel)
+
+        if len(self.assets) > 0:
+            allowable_actions.add(sell_property)
+            allowable_actions.add(make_sell_property_offer)
+            if len(self.mortgaged_assets) < len(self.assets):
+                allowable_actions.add(mortgage_property)
+
+        if len(self.mortgaged_assets) > 0:
+            allowable_actions.add(free_mortgage)
+
+        if self.has_get_out_of_jail_chance_card or self.has_get_out_of_jail_community_chest_card:
+            allowable_actions.add(use_get_out_of_jail_card)
+
+        if self.currently_in_jail:
+            allowable_actions.add(pay_jail_fine)
+
+        if len(self.full_color_sets_possessed) > 0:
+            allowable_actions.add(improve_property) # there is a chance this is not dynamically allowable because you've improved a property to its maximum.
+            # However, you have to make this check in your decision agent.
+
+        return allowable_actions
+
+
+    def compute_allowable_out_of_turn_actions(self, current_gameboard):
+        allowable_actions = set()
+        allowable_actions.add(concluded_actions)
+
+        if self.is_property_offer_outstanding is True:
+            allowable_actions.add(accept_sell_property_offer)
+
+        if self.num_total_hotels > 0 or self.num_total_houses > 0:
+            allowable_actions.add(sell_house_hotel)
+
+        if len(self.assets) > 0:
+            allowable_actions.add(sell_property)
+            allowable_actions.add(make_sell_property_offer)
+            if len(self.mortgaged_assets) < len(self.assets):
+                allowable_actions.add(mortgage_property)
+
+        if len(self.mortgaged_assets) > 0:
+            allowable_actions.add(free_mortgage)
+
+
+
+        if len(self.full_color_sets_possessed) > 0:
+            allowable_actions.add(
+                improve_property)  # there is a chance this is not dynamically allowable because you've improved a property to its maximum.
+            # However, you have to make this check in your decision agent.
+
+        return allowable_actions
 
     def compute_allowable_post_roll_actions(self, current_gameboard):
         allowable_actions = set()
@@ -194,11 +247,15 @@ class Player(object):
         if self.num_total_hotels > 0 or self.num_total_houses > 0:
             allowable_actions.add(sell_house_hotel)
 
-        if len(self.assets) > 0 and len(self.mortgaged_assets) < len(self.assets):
-            allowable_actions.add(mortgage_property)
+        if len(self.assets) > 0:
+            allowable_actions.add(sell_property)
+            if len(self.mortgaged_assets) < len(self.assets):
+                allowable_actions.add(mortgage_property)
 
         if self._option_to_buy is True:
             allowable_actions.add(buy_property)
+
+        return allowable_actions
 
 
     def make_pre_roll_moves(self, current_gameboard):
@@ -209,61 +266,76 @@ class Player(object):
         action_to_execute, parameters = self.make_pre_roll_move(self, current_gameboard, allowable_actions, code)
 
         if action_to_execute == skip_turn:
-            self._execute_action(action_to_execute, parameters)
-            return
+            return self._execute_action(action_to_execute, parameters)
+
 
         allowable_actions.add(concluded_actions)
         allowable_actions.remove(skip_turn) # from this time on, skip turn is not allowed.
 
         while True:  # currently, we set no limits on this; the assumption is that eventually the player will 'pass the baton'
-            if action_to_execute == concluded_actions:
+            if action_to_execute == concluded_actions: # short of raising an exception, this is the only way to exit this function
                 return self._execute_action(action_to_execute, parameters)
             else:
                 action_to_execute, parameters = self.make_pre_roll_move(self, current_gameboard, self.compute_allowable_pre_roll_actions(current_gameboard), code)
                 code = self._execute_action(action_to_execute, parameters)
 
 
-    # rewrite both make_ functions below
-    def make_post_roll_moves(self, current_gameboard):
-        action_to_execute = concluded_actions
-        parameters = dict()
+    def make_out_of_turn_moves(self, current_gameboard):
+        allowable_actions = self.compute_allowable_out_of_turn_actions(current_gameboard)
+        allowable_actions.remove(concluded_actions)
+        allowable_actions.add(skip_turn)
+        code = 0
+        action_to_execute, parameters = self.make_out_of_turn_move(self, current_gameboard, allowable_actions, code)
 
-        self.make_post_roll_move(self, current_gameboard, self.compute_allowable_post_roll_actions(current_gameboard))
+        if action_to_execute == skip_turn:
+            return self._execute_action(action_to_execute, parameters)
+
+        allowable_actions.add(concluded_actions)
+        allowable_actions.remove(skip_turn)  # from this time on, skip turn is not allowed.
+
+        while True:  # currently, we set no limits on this; the assumption is that eventually the player will 'pass the baton'
+            if action_to_execute == concluded_actions:  # short of raising an exception, this is the only way to exit this function
+                return self._execute_action(action_to_execute, parameters)
+            else:
+                action_to_execute, parameters = self.make_out_of_turn_move(self, current_gameboard,
+                                                                        self.compute_allowable_out_of_turn_actions(
+                                                                            current_gameboard), code)
+                code = self._execute_action(action_to_execute, parameters)
+
+
+    def make_post_roll_moves(self, current_gameboard):
+        allowable_actions = self.compute_allowable_post_roll_actions(current_gameboard)
+        code = 0
+        action_to_execute, parameters = self.make_post_roll_move(self, current_gameboard, allowable_actions, code)
+
+        if action_to_execute == concluded_actions:
+            self._force_buy_outcome(current_gameboard)
+            return self._execute_action(action_to_execute, parameters) # now we can conclude actions
+
 
         while True:
-            if action_to_execute == concluded_actions:
-                code = self._execute_action(action_to_execute, parameters)
-                return 'concluded_actions'
+            if action_to_execute == concluded_actions: # this is the only way to exit this function
+                self._force_buy_outcome(current_gameboard)
+                return self._execute_action(action_to_execute, parameters)  # now we can conclude actions
+
             else:
-                self.make_post_roll_move(self, current_gameboard, self.compute_allowable_post_roll_actions(current_gameboard))
-
-    def make_out_of_turn_moves(self, current_gameboard):
-        action_to_execute = skip_turn
-        parameters = dict()
-
-        self.make_out_of_turn_initial_move(self, current_gameboard, self.compute_allowable_out_of_turn_actions(current_gameboard))
-
-        action_flag = False # when it turns true, it means we've attempted some action rather than skipping the turn.
-
-        while True: # currently, we set no limits on this; the assumption is that eventually the player will 'pass the baton'
-
-            if action_to_execute != skip_turn:
-                action_flag = True
+                action_to_execute, parameters = self.make_post_roll_move(self, current_gameboard,
+                                                                        self.compute_allowable_post_roll_actions(
+                                                                            current_gameboard), code)
+                # print action_to_execute
                 code = self._execute_action(action_to_execute, parameters)
 
-                if action_to_execute == concluded_actions:
-                    return 'concluded_actions'
 
-                self.make_out_of_turn_continuing_move(self, current_gameboard, self.compute_allowable_out_of_turn_actions(current_gameboard)) # you have to decide what to do next if the action is not concluded_actions
+    def _force_buy_outcome(self, current_gameboard): # if you land on a property owned by the bank, and don't buy it, this function will do the needful
+        if self._option_to_buy is True:
 
-            elif action_to_execute == skip_turn:
+            self._own_or_auction(current_gameboard, current_gameboard['location_sequence'][self.current_position])
+            self.reset_option_to_buy()
 
-                if action_flag:
-                    print 'You have already taken at least one action and cannot skip turn. To conclude turn, execute concluded_actions'
-                    continue
-                else:
-                    return 'skipped_turn'
+        return
 
+    def reset_option_to_buy(self):
+        self._option_to_buy = False
 
     def _execute_action(self, action_to_execute, parameters):
         """

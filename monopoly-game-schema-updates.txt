@@ -24,6 +24,8 @@ Updates from v1-1 to v1-2:
 
 --the 'player' objects now have some additional fields that will be useful for keeping track of the game state. 
 
+--I've added 'mortgage_property', 'improve_property' to the list of functions that are allowed in out_of_turn moves. 'bid_on_property' has been removed. The reason is that currently, the only way you can bid on a property is at auction, which is conducted by the bank as a special process when a player refuses to buy a property on which he/she has landed. So you can't really 'choose' to bid in an out_of_turn move; instead, you can bid only in a player's post-roll phase. 
+
 
 REMINDERS:
 

@@ -2,7 +2,7 @@ class Bank(object):
     def __init__(self):
         pass
 
-    def auction_property(self, starting_player_index, current_gameboard, asset):
+    def auction(self, starting_player_index, current_gameboard, asset):
         # starting player may be out of the game. the code makes this check and updates starting player if necessary.
         current_bid = 0
         players_out_of_auction = set()
@@ -33,7 +33,7 @@ class Bank(object):
             if bidding_player in players_out_of_auction:
                 bidding_player_index = (bidding_player_index+1)%len(current_gameboard['players']) # next player
                 continue
-            proposed_bid = bidding_player.make_bid(current_gameboard, asset, current_bid)
+            proposed_bid = bidding_player.make_bid(bidding_player, current_gameboard, asset, current_bid)
             # make_bid automatically passes in the player as the first argument since it is a non-static function assignment
 
             if proposed_bid <= current_bid: # the <= serves as a forcing function to ensure the proposed bid must be non-zero
