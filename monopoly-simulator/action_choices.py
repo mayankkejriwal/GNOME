@@ -1,5 +1,6 @@
 import numpy as np
 
+# every function in here that can be called from outside must return a success or failure (I need to modify the returns)
 
 def bid_on_property(player, current_gameboard, asset, current_bid, bidding_strategy_function):
     # bidding strategy function is what you use to decide what/how to bid. See decision_agent_1 for examples.
@@ -200,6 +201,10 @@ def roll_die(die_objects):
 def buy_property(player, asset, current_gameboard): # you must have enough cash for this asset + it must belong to the bank
     # the only way to buy a property from another player is if they offer to sell it to you and you accept the offer.
     if player.current_cash < asset.price or asset.owned_by != 'bank':
+        # property has to go up for auction
+        index_current_player = current_gameboard['players'].index(player)  # in players, find the index of the current player
+        starting_player_index = (index_current_player + 1) % len(current_gameboard['players'])  # the next player's index. this player will start the auction
+        current_gameboard['bank'].auction(starting_player_index, current_gameboard, asset)
         return
     else:
         player.current_cash -= asset.price

@@ -6,8 +6,8 @@ class Player(object):
     def __init__(self, current_position, status, has_get_out_of_jail_community_chest_card, has_get_out_of_jail_chance_card,
                  current_cash, num_railroads_possessed, player_name, assets,full_color_sets_possessed, currently_in_jail,
                  num_utilities_possessed,
-                 handle_negative_cash_balance, make_pre_roll_initial_move, make_pre_roll_continuing_move, # on this line and below, all variables are assigned to a method
-                 make_out_of_turn_initial_move, make_out_of_turn_continuing_move,
+                 handle_negative_cash_balance, make_pre_roll_move, # on this line and below, all variables are assigned to a method
+                 make_out_of_turn_move,
                  make_post_roll_move, make_buy_property_decision, make_bid
                  ):
         self.current_position = current_position # this is an integer. Use 'location_sequence' in the game schema to map position into an actual location
@@ -24,10 +24,8 @@ class Player(object):
 
         # method assignments
         self.handle_negative_cash_balance = handle_negative_cash_balance
-        self.make_pre_roll_initial_move = make_pre_roll_initial_move
-        self.make_pre_roll_continuing_move = make_pre_roll_continuing_move
-        self.make_out_of_turn_initial_move = make_out_of_turn_initial_move
-        self.make_out_of_turn_continuing_move = make_out_of_turn_continuing_move
+        self.make_pre_roll_move = make_pre_roll_move
+        self.make_out_of_turn_move = make_out_of_turn_move
         self.make_post_roll_move = make_post_roll_move
         self.make_buy_property_decision = make_buy_property_decision
         self.make_bid = make_bid
@@ -44,10 +42,9 @@ class Player(object):
         self.is_property_offer_outstanding = False # only one property offer at a time can be considered
 
         self.mortgaged_assets = set()
-        # self._current_dues = 0
-        # self._dues_recipients = list() # we maintain a list, since sometimes (such as when we have to make payments to all other players)
-                                       # there may be multiple recipients. The assumption is that if there is more than one element
-                                       # in the list, _current_dues will be independently owed to each one of them.
+
+        self._option_to_buy = False # this option will turn true when  the player lands on a property that could be bought.
+        # We always set it to false again at the end of the post_roll phase.
 
     def begin_bankruptcy_proceedings(self):
         self.current_position = None
@@ -94,7 +91,8 @@ class Player(object):
             return
         elif current_location.loc_class == 'real_estate':
             if current_location.owned_by == 'bank':
-                self._own_or_auction(current_gameboard, current_location)
+                self._option_to_buy = True
+                # self._own_or_auction(current_gameboard, current_location)
                 return
             elif current_location.is_mortgaged is True:
                 return
@@ -106,7 +104,8 @@ class Player(object):
                 return
         elif current_location.loc_class == 'railroad':
             if current_location.owned_by == 'bank':
-                self._own_or_auction(current_gameboard, current_location)
+                self._option_to_buy = True
+                # self._own_or_auction(current_gameboard, current_location)
                 return
             elif current_location.is_mortgaged is True:
                 return
@@ -118,7 +117,8 @@ class Player(object):
                 return
         elif current_location.loc_class == 'utility':
             if current_location.owned_by == 'bank':
-                self._own_or_auction(current_gameboard, current_location)
+                self._option_to_buy = True
+                # self._own_or_auction(current_gameboard, current_location)
                 return
             elif current_location.is_mortgaged is True:
                 return
@@ -183,38 +183,47 @@ class Player(object):
         pass # to come
 
     def compute_allowable_pre_roll_actions(self, current_gameboard):
+        allowable_actions = set()
+        allowable_actions.add(concluded_actions)
         pass # to come
 
     def compute_allowable_post_roll_actions(self, current_gameboard):
-        pass # to come
+        allowable_actions = set()
+        allowable_actions.add(concluded_actions)
+
+        if self.num_total_hotels > 0 or self.num_total_houses > 0:
+            allowable_actions.add(sell_house_hotel)
+
+        if len(self.assets) > 0 and len(self.mortgaged_assets) < len(self.assets):
+            allowable_actions.add(mortgage_property)
+
+        if self._option_to_buy is True:
+            allowable_actions.add(buy_property)
+
 
     def make_pre_roll_moves(self, current_gameboard):
-        action_to_execute = skip_turn
-        parameters = dict()
+        allowable_actions = self.compute_allowable_pre_roll_actions(current_gameboard)
+        allowable_actions.remove(concluded_actions)
+        allowable_actions.add(skip_turn)
+        code = 0
+        action_to_execute, parameters = self.make_pre_roll_move(self, current_gameboard, allowable_actions, code)
 
-        self.make_pre_roll_initial_move(self, current_gameboard, self.compute_allowable_pre_roll_actions(current_gameboard))
+        if action_to_execute == skip_turn:
+            self._execute_action(action_to_execute, parameters)
+            return
 
-        action_flag = False  # when it turns true, it means we've attempted some action rather than skipping the turn.
+        allowable_actions.add(concluded_actions)
+        allowable_actions.remove(skip_turn) # from this time on, skip turn is not allowed.
 
         while True:  # currently, we set no limits on this; the assumption is that eventually the player will 'pass the baton'
-
-            if action_to_execute != skip_turn:
-                action_flag = True
+            if action_to_execute == concluded_actions:
+                return self._execute_action(action_to_execute, parameters)
+            else:
+                action_to_execute, parameters = self.make_pre_roll_move(self, current_gameboard, self.compute_allowable_pre_roll_actions(current_gameboard), code)
                 code = self._execute_action(action_to_execute, parameters)
 
-                if action_to_execute == concluded_actions:
-                    return 'concluded_actions'
 
-                self.make_pre_roll_continuing_move(self, current_gameboard, self.compute_allowable_pre_roll_actions(current_gameboard))  # you have to decide what to do next if the action is not concluded_actions
-
-            elif action_to_execute == skip_turn:
-
-                if action_flag:
-                    print 'You have already taken at least one action and cannot skip turn. To conclude turn, execute concluded_actions'
-                    continue
-                else:
-                    return 'skipped_turn'
-
+    # rewrite both make_ functions below
     def make_post_roll_moves(self, current_gameboard):
         action_to_execute = concluded_actions
         parameters = dict()
