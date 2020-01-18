@@ -10,7 +10,7 @@ class Player(object):
                  make_out_of_turn_initial_move, make_out_of_turn_continuing_move,
                  make_post_roll_move, make_buy_property_decision, make_bid
                  ):
-        self.current_position = current_position
+        self.current_position = current_position # this is an integer. Use 'location_sequence' in the game schema to map position into an actual location
         self.status = status
         self.has_get_out_of_jail_chance_card = has_get_out_of_jail_chance_card
         self.has_get_out_of_jail_community_chest_card = has_get_out_of_jail_community_chest_card
@@ -94,16 +94,20 @@ class Player(object):
             return
         elif current_location.loc_class == 'real_estate':
             if current_location.owned_by == 'bank':
-                self.make_buy_property_decision(self, current_gameboard)
+                self._own_or_auction(current_gameboard, current_location)
+                return
             elif current_location.is_mortgaged is True:
                 return
             else:
                 self.calculate_and_pay_rent_dues(current_gameboard, True)
+                return
         elif current_location.loc_class == 'tax':
                 self.current_cash -= current_location.amount_due
+                return
         elif current_location.loc_class == 'railroad':
             if current_location.owned_by == 'bank':
-                self.make_buy_property_decision(self, current_gameboard)
+                self._own_or_auction(current_gameboard, current_location)
+                return
             elif current_location.is_mortgaged is True:
                 return
             else:
@@ -111,9 +115,11 @@ class Player(object):
                 recipient = current_location.owned_by
                 recipient.receive_cash(dues)
                 self.current_cash -= dues
+                return
         elif current_location.loc_class == 'utility':
             if current_location.owned_by == 'bank':
-                self.make_buy_property_decision(self, current_gameboard)
+                self._own_or_auction(current_gameboard, current_location)
+                return
             elif current_location.is_mortgaged is True:
                 return
             else:
@@ -121,8 +127,24 @@ class Player(object):
                 recipient = current_location.owned_by
                 recipient.receive_cash(dues)
                 self.current_cash -= dues
+                return
         elif current_location.loc_class == 'action':
                 current_location.perform_action(self, current_gameboard)
+                return
+        else:
+            print 'unidentified location type'
+            raise Exception
+
+
+    def _own_or_auction(self, current_gameboard, asset):
+        dec = self.make_buy_property_decision(self, current_gameboard, asset)
+        if dec:
+            asset.update_asset_owner(self, current_gameboard)
+            return
+        else:
+            index_current_player = current_gameboard['players'].index(self) # in players, find the index of the current player
+            starting_player_index = (index_current_player+1)%len(current_gameboard['players']) # the next player's index. this player will start the auction
+            return current_gameboard['bank'].auction(starting_player_index, current_gameboard, asset)
 
 
     def calculate_and_pay_rent_dues(self, current_gameboard, update=True):

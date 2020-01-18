@@ -1,4 +1,5 @@
 import action_choices
+# all decision_agent functions MUST have this signature, and in particular, the first argument is always a player object
 
 def handle_negative_cash_balance(player, current_gameboard):
     return -1 # we don't try; a more graceful agent may try mortgaging/selling.
@@ -60,6 +61,9 @@ def make_bid(player, current_gameboard, asset, current_bid):
             return 0 # this will lead to a rejection of the bid downstream automatically
     else:
         return 0 # we never bid more than the price of the asset
+
+    # We are aware that this can be simplified with a simple return 0 statement at the end. However in the final baseline agent
+    # the return 0's would be replaced with more sophisticated rules. Think of them as placeholders.
 
 
 def _build_decision_agent_methods_dict():
