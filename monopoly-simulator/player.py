@@ -90,6 +90,15 @@ class Player(object):
             self.mortgaged_assets.add(asset)
             print 'Total number of mortgaged assets owned by player is ',str(len(self.mortgaged_assets))
 
+    def charge_player(self, amount):
+        if amount < 0:
+            print 'You cannot charge player negative amount of cash.'
+            raise Exception
+        print self.player_name, ' is being charged amount: ',str(amount)
+        print 'Before charge, player has cash ',str(self.current_cash)
+        self.current_cash -= amount
+        print self.player_name, ' now has cash: ',str(self.current_cash)
+
     def discharge_assets_to_bank(self): # discharge assets to bank
         if self.assets:
             for asset in self.assets:
@@ -175,8 +184,23 @@ class Player(object):
             starting_player_index = (index_current_player+1)%len(current_gameboard['players']) # the next player's index. this player will start the auction
             return current_gameboard['bank'].auction(starting_player_index, current_gameboard, asset)
 
+    def update_player_position(self, new_position, current_gameboard):
+        """
+        Move player to location index specified by new_position
+        :param new_position: An integer. Specifies index in location_sequence (in current_gameboard) to which to move the player
+        :return: None
+        """
+        print 'Player is currently in position ',current_gameboard['location_sequence'][self.current_position].name,
+        print ' and is moving to position ',current_gameboard['location_sequence'][new_position].name
+        self.current_position = new_position
 
-    def calculate_and_pay_rent_dues(self, current_gameboard, update=True):
+    def send_to_jail(self, current_gameboard):
+        print self.player_name,' is being sent to jail.'
+        jail_position = current_gameboard['jail_position']
+        self.currently_in_jail = True
+        self.current_position = jail_position
+
+    def calculate_and_pay_rent_dues(self, current_gameboard):
         """
         current_gameboard is the current game_elements data structure.
         """
@@ -193,11 +217,13 @@ class Player(object):
 
     def receive_cash(self, amount):
         if amount < 0:
-            print self.player_name
-            print amount
-            print 'stealing detected. Terminating game.'
+            print self.player_name,' is receiving negative cash: ',str(amount),'. This is an unintended use of this function'
             raise Exception
+
+        print self.player_name, ' is receiving amount: ', str(amount)
+        print 'Before receipt, player has cash ', str(self.current_cash)
         self.current_cash += amount
+        print self.player_name, ' now has cash: ', str(self.current_cash)
 
     # def pay_dues(self):
     #     if self._dues_recipients:

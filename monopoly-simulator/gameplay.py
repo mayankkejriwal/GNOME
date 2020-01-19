@@ -2,7 +2,7 @@ import initialize_game_elements
 from action_choices import roll_die
 import numpy as np
 from card_utility_actions import move_player_after_die_roll
-from simple_decision_agent import decision_agent_methods # this is where you should import your own decision agent methods dict
+from simple_decision_agent_1 import decision_agent_methods # this is where you should import your own decision agent methods dict
 import json
 import diagnostics
 

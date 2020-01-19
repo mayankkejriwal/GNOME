@@ -44,4 +44,4 @@ g = Test()
 print g.test_method(1,2)
 
 k = bank.Bank()
-print type(k) == bank.Bank
+print 'bank.Bank' in str(type(k))
