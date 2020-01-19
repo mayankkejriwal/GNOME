@@ -2,20 +2,40 @@ import sys
 
 
 def go_to_jail(player, current_gameboard):
+    """
+
+    :param player:
+    :param current_gameboard:
+    :return:
+    """
     jail_position = current_gameboard['jail_position']
     player.currently_in_jail = True
     player.current_position = jail_position
 
-def pick_card_from_community_chest(player, current_gameboard): # it will pick the card and execute the action
-    # get_out_of_jail_free card is treated a little differently, since we must remove it from the card pack.
+
+def pick_card_from_community_chest(player, current_gameboard):
+    """
+    Pick the card  from the community chest pack and execute the action
+    Note: get_out_of_jail_free card is treated a little differently, since we must remove it from the card pack.
+    :param player:
+    :param current_gameboard:
+    :return:
+    """
     card = current_gameboard['choice_function'](list(current_gameboard['community_chest_cards']))
     if card.name == 'get_out_of_jail_free':
         current_gameboard['community_chest_cards'].remove(card)
     card.action(player, card, current_gameboard) # all card actions must take this signature
 
 
-def pick_card_from_chance(player, current_gameboard): # it will pick the card and execute the action
-    # get_out_of_jail_free card is treated a little differently, since we must remove it from the card pack.
+def pick_card_from_chance(player, current_gameboard):
+    """
+    Pick the card  from the chance pack and execute the action
+    Note: get_out_of_jail_free card is treated a little differently, since we must remove it from the card pack.
+    :param player: an instance of Player
+    :param current_gameboard: the global
+    :return:
+    """
+
     card = current_gameboard['choice_function'](list(current_gameboard['chance_cards']))
     if card.name == 'get_out_of_jail_free':
         current_gameboard['chance_cards'].remove(card)
@@ -139,8 +159,10 @@ def calculate_general_repair_cost(player, card, current_gameboard): # assesses, 
     cost = player.num_total_houses * cost_per_house + player.num_total_hotels * cost_per_hotel
     player.current_cash -= cost
 
+
 def move_player_relative(player, card, current_gameboard):
     move_player_after_die_roll(player, card.new_relative_position, current_gameboard, True)
+
 
 def move_player_after_die_roll(player, rel_move, current_gameboard, check_for_go=True): # this is a utility function used in gameplay, rather than card draw
     # it's important to note that if we are 'visiting' in jail, this function will not set the player.currently_in_jail field to True, since it shouldn't.
@@ -159,6 +181,9 @@ def move_player_after_die_roll(player, rel_move, current_gameboard, check_for_go
     player.current_position = new_position # update this only after checking for go
 
 
+"""
+All functions below are for internal use only and should never be invoked externally.
+"""
 def _has_player_passed_go(current_position, new_position, go_position):
     if new_position == go_position:
         return True

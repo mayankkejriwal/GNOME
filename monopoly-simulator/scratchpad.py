@@ -8,6 +8,7 @@ from location import *
 import json
 import sys
 from action_choices import skip_turn
+import bank
 
 # print 10%10
 # game_schema_path = '/Users/mayankkejriwal/git-projects/GNOME/'
@@ -41,3 +42,6 @@ class Test(object):
 
 g = Test()
 print g.test_method(1,2)
+
+k = bank.Bank()
+print type(k) == bank.Bank

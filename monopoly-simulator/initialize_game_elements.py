@@ -1,7 +1,13 @@
+"""
+The only public facing function is initialize_board. All _initialize_* functions are only for internal use. If you
+want to play around, you could always implement your _initialize functions and replace accordingly in initialize_board!
+"""
+
 import location
 from dice import Dice
 from bank import Bank
-from card_utility_actions import * # functions from this module will be used in reflections in initialize_board, and excluding this import will lead to run-time errors
+from card_utility_actions import * # functions from this module will be used in reflections in initialize_board,
+                                    # and excluding this import will lead to run-time errors
 import sys
 from player import Player
 import card
@@ -10,11 +16,37 @@ import card
 def initialize_board(game_schema, player_decision_agents):
 
     game_elements = dict()
+    print 'Beginning game set up...'
 
     # Step 0: initialize bank
-    game_elements['bank'] = Bank()
+    _initialize_bank(game_elements)
+    print 'Successfully instantiated and initialized bank.'
 
     # Step 1: set locations
+    _initialize_locations(game_elements, game_schema)
+    print 'Successfully instantiated and initialized all locations on board.'
+
+
+    # Step 2: set dice
+    _initialize_dies(game_elements, game_schema)
+    print 'Successfully instantiated and initialized dies'
+
+    # Step 3: set cards
+    _initialize_cards(game_elements, game_schema)
+    print 'Successfully instantiated and initialized cards'
+
+    # Step 4: set players
+    _initialize_players(game_elements, game_schema, player_decision_agents)
+    print 'Successfully instantiated and initialized players and decision agents'
+
+    return game_elements
+
+
+def _initialize_bank(game_elements):
+    game_elements['bank'] = Bank()
+
+
+def _initialize_locations(game_elements, game_schema):
     location_objects = dict()
     railroad_positions = list()
     utility_positions = list()
@@ -23,10 +55,10 @@ def initialize_board(game_schema, player_decision_agents):
         if l['loc_class'] == 'action':
             action_args = l.copy()
             action_args['perform_action'] = getattr(sys.modules[__name__], l['perform_action'])
-            location_objects[l['name']]=location.ActionLocation(**action_args)
+            location_objects[l['name']] = location.ActionLocation(**action_args)
 
         elif l['loc_class'] == 'do_nothing':
-            location_objects[l['name']]=location.DoNothingLocation(**l)
+            location_objects[l['name']] = location.DoNothingLocation(**l)
 
         elif l['loc_class'] == 'real_estate':
             real_estate_args = l.copy()
@@ -49,7 +81,7 @@ def initialize_board(game_schema, player_decision_agents):
             location_objects[l['name']] = location.UtilityLocation(**utility_args)
 
         else:
-            print 'encountered unexpected location class: ',l['loc_class']
+            print 'encountered unexpected location class: ', l['loc_class']
             raise Exception
 
     location_sequence = list()
@@ -65,9 +97,8 @@ def initialize_board(game_schema, player_decision_agents):
     game_elements['railroad_positions'] = railroad_positions
     game_elements['utility_positions'] = utility_positions
 
-
     if len(location_sequence) != game_schema['locations']['location_count']:
-        print 'location count: ',str(game_schema['locations']['location_count']),', length of location sequence: ',
+        print 'location count: ', str(game_schema['locations']['location_count']), ', length of location sequence: ',
         str(len(location_sequence)), ' are unequal.'
         raise Exception
 
@@ -81,7 +112,7 @@ def initialize_board(game_schema, player_decision_agents):
     game_elements['location_objects'] = location_objects
     game_elements['location_sequence'] = location_sequence
 
-    color_assets = dict() # we will not put anything in here that does not have a color.
+    color_assets = dict()  # we will not put anything in here that does not have a color.
     for o in location_sequence:
         if o.color and o.color in game_schema['players']['player_states']['full_color_sets_possessed'][0]:
             if o.color not in color_assets:
@@ -90,19 +121,21 @@ def initialize_board(game_schema, player_decision_agents):
 
     game_elements['color_assets'] = color_assets
 
-    # Step 2: set dice
+
+def _initialize_dies(game_elements, game_schema):
     if len(game_schema['die']['die_state']) != game_schema['die']['die_count']:
-        print 'dice count and length of dice states vector are inconsistent'
+        print 'dice count is unequal to number of specified dice state-vectors...'
         raise Exception
     die_count = game_schema['die']['die_count']
     die_objects = list()
     for i in range(0, die_count):
-        die_objects.append(Dice(game_schema['die']['die_state'][i]))
+        die_objects.append(Dice(game_schema['die']['die_state'][i])) # send in the vector
 
     game_elements['dies'] = die_objects
     game_elements['current_die_total'] = 0
 
-    # Step 3: set cards
+
+def _initialize_cards(game_elements, game_schema):
     community_chest_cards = set()
     chance_cards = set()
 
@@ -116,7 +149,7 @@ def initialize_board(game_schema, player_decision_agents):
                 card_args = specific_card.copy()
                 del card_args['num']
                 card_args['action'] = getattr(sys.modules[__name__], specific_card['action'])
-                card_args['destination'] = location_objects[specific_card['destination']]
+                card_args['destination'] = game_elements['location_objects'][specific_card['destination']]
                 card_obj = card.MovementCard(**card_args)
                 community_chest_cards.add(card_obj)
 
@@ -128,7 +161,8 @@ def initialize_board(game_schema, player_decision_agents):
                 card_obj = card.ContingentMovementCard(**card_args)
                 community_chest_cards.add(card_obj)
 
-        elif specific_card['card_type'] == 'positive_cash_from_bank' or specific_card['card_type'] == 'negative_cash_from_bank':
+        elif specific_card['card_type'] == 'positive_cash_from_bank' or specific_card[
+            'card_type'] == 'negative_cash_from_bank':
             for i in range(0, specific_card['num']):
                 card_args = specific_card.copy()
                 del card_args['num']
@@ -145,13 +179,18 @@ def initialize_board(game_schema, player_decision_agents):
                 card_obj = card.ContingentCashFromBankCard(**card_args)
                 community_chest_cards.add(card_obj)
 
-        elif specific_card['card_type'] == 'positive_cash_from_players' or card['card_type'] == 'negative_cash_from_players':
+        elif specific_card['card_type'] == 'positive_cash_from_players' or card[
+            'card_type'] == 'negative_cash_from_players':
             for i in range(0, specific_card['num']):
                 card_args = specific_card.copy()
                 del card_args['num']
                 card_args['action'] = getattr(sys.modules[__name__], specific_card['action'])
                 card_obj = card.CashFromPlayersCard(**card_args)
                 community_chest_cards.add(card_obj)
+        else:
+
+            print 'community chest card type is not recognized: ', specific_card['card_type']
+            raise Exception
 
         community_chest_card_objects[card_obj.name] = card_obj
 
@@ -166,7 +205,7 @@ def initialize_board(game_schema, player_decision_agents):
                 card_args = specific_card.copy()
                 del card_args['num']
                 card_args['action'] = getattr(sys.modules[__name__], specific_card['action'])
-                card_args['destination'] = location_objects[specific_card['destination']]
+                card_args['destination'] = game_elements['location_objects'][specific_card['destination']]
                 card_obj = card.MovementCard(**card_args)
                 chance_cards.add(card_obj)
 
@@ -194,7 +233,8 @@ def initialize_board(game_schema, player_decision_agents):
                 card_obj = card.MovementRelativeCard(**card_args)
                 chance_cards.add(card_obj)
 
-        elif specific_card['card_type'] == 'positive_cash_from_bank' or specific_card['card_type'] == 'negative_cash_from_bank':
+        elif specific_card['card_type'] == 'positive_cash_from_bank' or specific_card[
+            'card_type'] == 'negative_cash_from_bank':
             for i in range(0, specific_card['num']):
                 card_args = specific_card.copy()
                 del card_args['num']
@@ -211,13 +251,17 @@ def initialize_board(game_schema, player_decision_agents):
                 card_obj = card.ContingentCashFromBankCard(**card_args)
                 chance_cards.add(card_obj)
 
-        elif specific_card['card_type'] == 'positive_cash_from_players' or specific_card['card_type'] == 'negative_cash_from_players':
+        elif specific_card['card_type'] == 'positive_cash_from_players' or specific_card[
+            'card_type'] == 'negative_cash_from_players':
             for i in range(0, specific_card['num']):
                 card_args = specific_card.copy()
                 del card_args['num']
                 card_args['action'] = getattr(sys.modules[__name__], specific_card['action'])
                 card_obj = card.CashFromPlayersCard(**card_args)
                 chance_cards.add(card_obj)
+        else:
+            print 'chance card type is not recognized: ', specific_card['card_type']
+            raise Exception
 
         chance_card_objects[card_obj.name] = card_obj
 
@@ -229,7 +273,8 @@ def initialize_board(game_schema, player_decision_agents):
     game_elements['chance_card_objects'] = chance_card_objects
     game_elements['community_chest_card_objects'] = community_chest_card_objects
 
-    # Step 4: set players
+
+def _initialize_players(game_elements, game_schema, player_decision_agents):
     players = list()
     player_dict = game_schema['players']['player_states']
 
@@ -247,10 +292,8 @@ def initialize_board(game_schema, player_decision_agents):
     del player_args['starting_cash']
     for player in player_dict['player_name']:
         player_args['player_name'] = player
-        for k,v in player_decision_agents[player].items():
+        for k, v in player_decision_agents[player].items():
             player_args[k] = v
         players.append(Player(**player_args))
 
     game_elements['players'] = players
-
-    return game_elements

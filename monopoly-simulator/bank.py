@@ -6,8 +6,8 @@ class Bank(object):
         """
         This function will be called when a player lands on a purchaseable property (real estate, railroad or utility)
         but decides not to make the purchase. 
-        :param starting_player_index:  The index of the player in current_gameboard['players'] who will be starting the auction
-        :param current_gameboard: the global game board data structure
+        :param starting_player_index:  An integer. The index of the player in current_gameboard['players'] who will be starting the auction
+        :param current_gameboard: A dict. Specifies the global game board data structure
         :param asset: A purchaseable instance of Location (i.e. RealEstateLocation, UtilityLocation or RailroadLocation)
         :return: None
         """

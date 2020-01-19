@@ -1,4 +1,5 @@
 from action_choices import *
+from location import  RealEstateLocation, UtilityLocation, RailroadLocation
 
 
 class Player(object):
@@ -56,6 +57,38 @@ class Player(object):
         # self._current_dues = 0
         # self._dues_recipients = list()
 
+    def add_asset(self, asset, current_gameboard):
+        print 'Looking to add asset ',asset.name,' to portfolio of ',self.player_name
+        if asset in self.assets:
+            print 'Error! Player already owns asset!'
+            raise Exception
+
+        self.assets.add(asset)
+        print 'total no. of assets owned by player: ',str(len(self.assets))
+
+        if type(asset) == UtilityLocation:
+            self.num_utilities_possessed += 1
+            print 'incrementing ',self.player_name, "'s utility count by 1, total utilities owned by player now is ",str(self.num_utilities_possessed)
+        elif type(asset) == RailroadLocation:
+            self.num_railroads_possessed += 1
+            print 'incrementing ', self.player_name, "'s railroad count by 1, total railroads owned by player now is ", str(self.num_railroads_possessed)
+        elif type(asset) == RealEstateLocation:
+
+            flag = True
+            for o in current_gameboard['color_assets'][asset.color]:
+                if o not in self.assets:
+                    flag = False
+                    break
+            if flag: # if this is still True, then that means we now possess all the properties with this asset's color
+                self.full_color_sets_possessed.add(asset.color)
+        else:
+            print 'You are attempting to add non-purchaseable asset to player\'s portfolio!'
+            raise Exception
+
+        if asset.is_mortgaged:
+            print 'asset ',asset.name," is mortgaged. Adding to player's mortgaged assets."
+            self.mortgaged_assets.add(asset)
+            print 'Total number of mortgaged assets owned by player is ',str(len(self.mortgaged_assets))
 
     def discharge_assets_to_bank(self): # discharge assets to bank
         if self.assets:
