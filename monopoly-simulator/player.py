@@ -48,7 +48,7 @@ class Player(object):
     def begin_bankruptcy_proceedings(self):
         self.current_position = None
         self.status = 'lost'
-        self.has_get_out_of_jail_chance_card = False
+        self.has_get_out_of_jail_chance_card = False # if this is true, we need to place the card back in the pack
         self.has_get_out_of_jail_community_chest_card = False
         self.current_cash = 0
         self.discharge_assets_to_bank()

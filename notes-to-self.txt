@@ -1,0 +1,3 @@
+there are placed in the game where we assign location.owned_by to 'bank'. We are doing something incorrect here, since it is usually a Player object. 
+
+railroads and utilities sometimes go over the upper limit for some players. Somewhere we're not updating them. 

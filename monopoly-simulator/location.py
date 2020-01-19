@@ -94,6 +94,10 @@ class RailroadLocation(Location):
         self._railroad_dues = obj
 
     def calculate_railroad_dues(self):
+        if self.owned_by.num_railroads_possessed > 4 or self.owned_by.num_railroads_possessed < 0:
+            print 'num railroads: ',self.owned_by.num_railroads_possessed
+            print self.owned_by
+        # print self.owned_by.num_railroads_possessed
         return self._railroad_dues[self.owned_by.num_railroads_possessed]
 
     def update_asset_owner(self, player,current_gameboard): # current gameboard is unused right now, but may be used to enforce consistency checks later
@@ -119,6 +123,9 @@ class UtilityLocation(Location):
         self._die_multiples = obj
 
     def calculate_utility_dues(self, die_total):
+        if self.owned_by.num_utilities_possessed > 2 or self.owned_by.num_utilities_possessed < 0:
+            print 'num utilities: ',self.owned_by.num_utilities_possessed
+            print self.owned_by
         return die_total*self._die_multiples[self.owned_by.num_utilities_possessed]
 
     def update_asset_owner(self, player, current_gameboard): # current gameboard is unused right now, but may be used to enforce consistency checks later

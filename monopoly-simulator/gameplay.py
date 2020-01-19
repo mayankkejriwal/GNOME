@@ -13,7 +13,7 @@ def simulate_game_instance(game_elements, np_seed=6):
     game_elements['seed'] = np_seed
     game_elements['choice_function'] = np.random.choice
     num_die_rolls = 0
-    game_elements['go_increment'] = 150 # we should not be modifying this here. It is only for testing purposes.
+    game_elements['go_increment'] = 0 # we should not be modifying this here. It is only for testing purposes.
 
     print 'players will play in the following order: ','->'.join([p.player_name for p in game_elements['players']])
     print 'Beginning play. Rolling first die...'
@@ -36,7 +36,7 @@ def simulate_game_instance(game_elements, np_seed=6):
             skip_turn += 1
         out_of_turn_player_index = current_player_index + 1
         while skip_turn != num_active_players:
-            print 'checkpoint 1'
+            # print 'checkpoint 1'
             out_of_turn_player = game_elements['players'][out_of_turn_player_index%len(game_elements['players'])]
             if out_of_turn_player.status == 'lost':
                 out_of_turn_player_index += 1
@@ -57,14 +57,14 @@ def simulate_game_instance(game_elements, np_seed=6):
         if not current_player.currently_in_jail:
             move_player_after_die_roll(current_player, sum(r), game_elements, check_for_go=True)
             current_player.process_move_consequences(game_elements)
-            print 'checkpoint 2'
+            # print 'checkpoint 2'
             # post-roll for current player. No out-of-turn moves allowed at this point.
             current_player.make_post_roll_moves(game_elements)
 
         else:
             current_player.currently_in_jail = False # the player is only allowed to skip one turn (i.e. this one)
 
-        print 'checkpoint 3'
+        # print 'checkpoint 3'
 
         # check for bankruptcy
 
@@ -73,18 +73,19 @@ def simulate_game_instance(game_elements, np_seed=6):
             if code == -1 or current_player.current_cash < 0:
                 current_player.begin_bankruptcy_proceedings()
                 num_active_players -= 1
+                diagnostics.print_asset_owners(game_elements)
+                diagnostics.print_player_cash_balances(game_elements)
         else:
             current_player.status = 'waiting_for_move'
 
         current_player_index += 1
         current_player_index = current_player_index%len(game_elements['players'])
 
-        if diagnostics.max_cash_balance(game_elements) > 30000:
+        if diagnostics.max_cash_balance(game_elements) > 300000:
             diagnostics.print_asset_owners(game_elements)
             diagnostics.print_player_cash_balances(game_elements)
             return
-        else:
-            diagnostics.print_player_cash_balances(game_elements)
+
 
     diagnostics.print_asset_owners(game_elements)
     print 'number of dice rolls: ',str(num_die_rolls)
