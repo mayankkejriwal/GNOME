@@ -4,13 +4,17 @@ import numpy as np
 from card_utility_actions import move_player_after_die_roll
 from simple_decision_agent import decision_agent_methods # this is where you should import your own decision agent methods dict
 import json
+import diagnostics
 
-def simulate_game_instance(game_elements, np_seed=2):
+def simulate_game_instance(game_elements, np_seed=6):
 
     np.random.seed(np_seed)
     np.random.shuffle(game_elements['players'])
     game_elements['seed'] = np_seed
     game_elements['choice_function'] = np.random.choice
+    num_die_rolls = 0
+    game_elements['go_increment'] = 150 # we should not be modifying this here. It is only for testing purposes.
+
     print 'players will play in the following order: ','->'.join([p.player_name for p in game_elements['players']])
     print 'Beginning play. Rolling first die...'
     current_player_index = 0
@@ -20,6 +24,7 @@ def simulate_game_instance(game_elements, np_seed=2):
         current_player = game_elements['players'][current_player_index]
         while current_player.status == 'lost':
             current_player_index += 1
+            current_player_index = current_player_index % len(game_elements['players'])
             current_player = game_elements['players'][current_player_index]
         current_player.status = 'current_move'
 
@@ -46,6 +51,7 @@ def simulate_game_instance(game_elements, np_seed=2):
         # but only if we're not in jail.
 
         r = roll_die(game_elements['dies'], np.random.choice)
+        num_die_rolls += 1
         game_elements['current_die_total'] = sum(r)
         # print sum(r)
         if not current_player.currently_in_jail:
@@ -73,14 +79,15 @@ def simulate_game_instance(game_elements, np_seed=2):
         current_player_index += 1
         current_player_index = current_player_index%len(game_elements['players'])
 
-        cash_balance = list()
-        for p in game_elements['players']:
-            cash_balance.append(str(p.current_cash))
-        print ' '.join(cash_balance)
+        if diagnostics.max_cash_balance(game_elements) > 30000:
+            diagnostics.print_asset_owners(game_elements)
+            diagnostics.print_player_cash_balances(game_elements)
+            return
+        else:
+            diagnostics.print_player_cash_balances(game_elements)
 
-        if int(cash_balance[0]) > 20000:
-            print cash_balance[0]
-            break
+    diagnostics.print_asset_owners(game_elements)
+    print 'number of dice rolls: ',str(num_die_rolls)
 
 
 def set_up_board(game_schema_file_path, player_decision_agents):

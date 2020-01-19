@@ -323,14 +323,15 @@ class Player(object):
                                                                             current_gameboard), code)
                 # print action_to_execute
                 code = self._execute_action(action_to_execute, parameters)
+                if action_to_execute == buy_property: # at this point you do not have the option to buy since you've had the option.
+                    self.reset_option_to_buy()
 
 
     def _force_buy_outcome(self, current_gameboard): # if you land on a property owned by the bank, and don't buy it, this function will do the needful
         if self._option_to_buy is True:
-
             self._own_or_auction(current_gameboard, current_gameboard['location_sequence'][self.current_position])
-            self.reset_option_to_buy()
 
+        self.reset_option_to_buy()
         return
 
     def reset_option_to_buy(self):
