@@ -1,3 +1,9 @@
+"""
+Use this file for testing all kinds of random hypotheses. Do NOT use it for unit testing or diagnostics code;
+we provide facilities for these in diagnostics.py and testing.py
+"""
+
+
 from location import *
 import json
 import sys
