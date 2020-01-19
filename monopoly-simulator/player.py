@@ -1,5 +1,4 @@
 from action_choices import *
-import sys
 
 
 class Player(object):

@@ -63,7 +63,7 @@ def simulate_game_instance(game_elements, np_seed=2):
         # check for bankruptcy
 
         if current_player.current_cash < 0:
-            code = current_player.handle_negative_cash_balance()
+            code = current_player.handle_negative_cash_balance(current_player, game_elements)
             if code == -1 or current_player.current_cash < 0:
                 current_player.begin_bankruptcy_proceedings()
                 num_active_players -= 1
@@ -78,15 +78,14 @@ def simulate_game_instance(game_elements, np_seed=2):
             cash_balance.append(str(p.current_cash))
         print ' '.join(cash_balance)
 
-        # if cash_balance[0] > 5000:
-        #     print cash_balance[0]
-        #     break
+        if int(cash_balance[0]) > 20000:
+            print cash_balance[0]
+            break
 
 
 def set_up_board(game_schema_file_path, player_decision_agents):
     game_schema = json.load(open(game_schema_file_path, 'r'))
     return initialize_game_elements.initialize_board(game_schema, player_decision_agents)
-
 
 
 player_decision_agents = dict()
