@@ -24,13 +24,9 @@ def print_player_cash_balances(game_elements):
     :param game_elements: A dict. Specifies global gameboard data structure
     :return: None
     """
-    cash_balance = list()
-    for p in game_elements['players']:
-        cash_balance.append(str(p.current_cash))
-    print ' '.join(cash_balance)
 
-    if int(cash_balance[0]) > 20000:
-        print cash_balance[0]
+    for p in game_elements['players']:
+        print p.player_name, ' has cash balance ',str(p.current_cash)
 
 
 def max_cash_balance(game_elements):

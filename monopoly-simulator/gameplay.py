@@ -13,7 +13,7 @@ def simulate_game_instance(game_elements, np_seed=6):
     game_elements['seed'] = np_seed
     game_elements['choice_function'] = np.random.choice
     num_die_rolls = 0
-    # game_elements['go_increment'] = 0 # we should not be modifying this here. It is only for testing purposes.
+    game_elements['go_increment'] = 20 # we should not be modifying this here. It is only for testing purposes.
 
     print 'players will play in the following order: ','->'.join([p.player_name for p in game_elements['players']])
     print 'Beginning play. Rolling first die...'
@@ -87,13 +87,16 @@ def simulate_game_instance(game_elements, np_seed=6):
             diagnostics.print_player_cash_balances(game_elements)
             return
 
-        loop_count += 1
-        if loop_count >= 30:
-            break
+        # loop_count += 1
+        # if loop_count >= 20:
+        #     break
 
 
+    print 'printing final asset owners: '
     diagnostics.print_asset_owners(game_elements)
     print 'number of dice rolls: ',str(num_die_rolls)
+    print 'printing final cash balances: '
+    diagnostics.print_player_cash_balances(game_elements)
 
 
 def set_up_board(game_schema_file_path, player_decision_agents):

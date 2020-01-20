@@ -41,7 +41,7 @@ class Bank(object):
         else:
             print current_gameboard['players'][bidding_player_index].player_name,' will place the first bid'
 
-        while len(players_out_of_auction) < len(current_gameboard['players'])-1: # we iterate and bid while at least 2 players remain
+        while len(players_out_of_auction) < len(current_gameboard['players'])-1: # we iterate and bid till just one player remains
             bidding_player = current_gameboard['players'][bidding_player_index]
             if bidding_player in players_out_of_auction:
                 bidding_player_index = (bidding_player_index+1)%len(current_gameboard['players']) # next player
@@ -52,8 +52,11 @@ class Bank(object):
             print bidding_player.player_name,' proposed bid ',str(proposed_bid)
 
             if proposed_bid == 0:
-                pass
-            elif proposed_bid < current_bid: # the <= serves as a forcing function to ensure the proposed bid must be non-zero
+                players_out_of_auction.add(bidding_player)
+                print bidding_player.player_name, ' is out of the auction.'
+                bidding_player_index = (bidding_player_index + 1) % len(current_gameboard['players'])
+                continue
+            elif proposed_bid <= current_bid: # the <= serves as a forcing function to ensure the proposed bid must be non-zero
                 players_out_of_auction.add(bidding_player)
                 print bidding_player.player_name, ' is out of the auction.'
                 bidding_player_index = (bidding_player_index + 1) % len(current_gameboard['players'])
@@ -64,8 +67,9 @@ class Bank(object):
             winning_player = bidding_player
             bidding_player_index = (bidding_player_index + 1) % len(current_gameboard['players'])
 
+
         if winning_player:
-            winning_player.current_cash -= current_bid # if it got here then current_bid is non-zero.
+            winning_player.charge_player(current_bid) # if it got here then current_bid is non-zero.
             asset.update_asset_owner(winning_player, current_gameboard)
         else:
             print 'Auction did not succeed in a sale.'

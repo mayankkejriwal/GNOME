@@ -296,20 +296,19 @@ def _initialize_cards(game_elements, game_schema):
 def _initialize_players(game_elements, game_schema, player_decision_agents):
     players = list()
     player_dict = game_schema['players']['player_states']
-
-    player_args = player_dict.copy()
-    player_args['status'] = 'waiting_for_move'
-    player_args['current_position'] = game_schema['go_position']
-    player_args['has_get_out_of_jail_chance_card'] = False
-    player_args['has_get_out_of_jail_community_chest_card'] = False
-    player_args['current_cash'] = player_dict['starting_cash']
-    player_args['num_railroads_possessed'] = 0
-    player_args['num_utilities_possessed'] = 0
-    player_args['full_color_sets_possessed'] = set()
-    player_args['assets'] = set()
-    player_args['currently_in_jail'] = False
-    del player_args['starting_cash']
     for player in player_dict['player_name']:
+        player_args = dict()
+        player_args['status'] = 'waiting_for_move'
+        player_args['current_position'] = game_schema['go_position']
+        player_args['has_get_out_of_jail_chance_card'] = False
+        player_args['has_get_out_of_jail_community_chest_card'] = False
+        player_args['current_cash'] = player_dict['starting_cash']
+        player_args['num_railroads_possessed'] = 0
+        player_args['num_utilities_possessed'] = 0
+        player_args['full_color_sets_possessed'] = set()
+        player_args['assets'] = set()
+        player_args['currently_in_jail'] = False
+
         player_args['player_name'] = player
         for k, v in player_decision_agents[player].items():
             player_args[k] = v

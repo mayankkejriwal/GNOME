@@ -91,7 +91,10 @@ def make_post_roll_move(player, current_gameboard, allowable_moves, code):
         """
     current_location = current_gameboard['location_sequence'][player.current_position]
     if action_choices.buy_property in allowable_moves and current_location.price < player.current_cash:
-        # if buy_property is in allowable_moves then that means the asset is purchaseable.
+        print player.player_name,': We will attempt to buy ',current_gameboard['location_sequence'][player.current_position].name,' from the bank.'
+        if code == -1:
+            print 'Did not succeed the last time. Concluding actions...'
+            return (action_choices.concluded_actions, dict())
         params = dict()
         params['player'] = player
         params['asset'] = current_gameboard['location_sequence'][player.current_position]

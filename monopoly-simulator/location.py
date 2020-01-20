@@ -27,14 +27,24 @@ class Location(object):
         If the asset is non-purchaseable, we will raise an exception. A more elegant way (we'll make this change
         in a close future edition) is to have a PurchaseableLocation class sitting between the purchaseable sub-classes
         like real estate and Location, and to add update_asset_owner as a method of PurchaseableLocation.
+
+        Note that we remove the asset from the previous owner's portfolio if it is not owned by the bank.
         :param player: Player instance. The player who now owns this asset (self)
         :param current_gameboard: A dict. The global gameboard data structure
         :return: None
         """
         print 'attempting to update asset ', self.name, ' to reflect new owner: ', player.player_name
         if self.loc_class == 'real_estate' or self.loc_class == 'railroad' or self.loc_class == 'utility':
+            if self.owned_by == player:
+                print player.player_name,' already owns this asset! Raising exception...'
+                raise Exception
+            elif type(self.owned_by) != Bank: # not owned by this player or by the bank.
+                print 'Asset is owned by ',self.owned_by.player_name,'. Attempting to remove...'
+                self.owned_by.remove_asset(self)
+                self.owned_by = current_gameboard['bank'] # this is temporary, but we want to enforce safe behavior
+
             self.owned_by = player
-            player.add_asset(self, current_gameboard)
+            player.add_asset(self, current_gameboard) # if the property is mortgaged, this will get reflected in the new owner's portfolio
             print 'Asset ownership update succeeded.'
         else:
             print 'Asset ',self.name,' is non-purchaseable!'
@@ -136,15 +146,19 @@ class RealEstateLocation(Location):
         situations applies.
         :return: An integer. The rent due.
         """
-        # a property can
+        print 'calculating rent for ',self.name
+        ans = self.rent # unimproved-non-monopolized rent (the default)
         if self.num_hotels == 1:
-            return self.rent_hotel
+            print 'property has a hotel. Updating rent.'
+            ans = self.rent_hotel
         elif self.num_houses > 0: # later we can replace these with reflections
-            return self._house_rent_dict[self.num_houses] # if for some reason you have more than 4 houses, you'll get a key error
+            print 'property has ',str(self.num_houses),' houses. Updating rent.'
+            ans = self._house_rent_dict[self.num_houses] # if for some reason you have more than 4 houses, you'll get a key error
         elif self.color in self.owned_by.full_color_sets_possessed:
-            return self.rent*2 # charge twice the rent on unimproved monopolized properties.
-        else:
-            return self.rent # unimproved-non-monopolized rent
+            ans = self.rent*2 # charge twice the rent on unimproved monopolized properties.
+            print 'property has color ', self.color, ' which is monopolized by ',self.owned_by.player_name,'. Updating rent.'
+        print 'rent is calculated to be ',str(ans)
+        return ans
 
 
 class TaxLocation(Location):
@@ -199,13 +213,15 @@ class RailroadLocation(Location):
         Compute dues if a player lands on railroad owned by another player.
         :return: An integer. Specifies railroad dues
         """
+        print 'calculating railroad dues for ',self.name
         if self.owned_by.num_railroads_possessed > 4 or self.owned_by.num_railroads_possessed < 0:
             print 'Error! num railroads possessed by ', self.owned_by.player_name, ' is ', \
-                str(self.owned_by.num_railroads_possessed)
+                str(self.owned_by.num_railroads_possessed),', which is impossible'
 
             raise Exception
-
-        return self._railroad_dues[self.owned_by.num_railroads_possessed]
+        dues = self._railroad_dues[self.owned_by.num_railroads_possessed]
+        print 'railroad dues are ',str(dues)
+        return dues
 
 
 class UtilityLocation(Location):
@@ -241,13 +257,16 @@ class UtilityLocation(Location):
         :param die_total: An integer. The dice total (if there's more than 1 dice as there is in the default game)
         :return: An integer. Specifies utility dues.
         """
+        print 'calculating utility dues for ', self.name
         if self.owned_by.num_utilities_possessed > 2 or self.owned_by.num_utilities_possessed < 0:
                 print 'Error! num utilities possessed by ',self.owned_by.player_name,' is ', \
-                    str(self.owned_by.num_utilities_possessed)
+                    str(self.owned_by.num_utilities_possessed), ', which is impossible'
 
                 raise Exception
 
-        return die_total*self._die_multiples[self.owned_by.num_utilities_possessed]
+        dues = die_total*self._die_multiples[self.owned_by.num_utilities_possessed]
+        print 'utility dues are ', str(dues)
+        return dues
 
 
 

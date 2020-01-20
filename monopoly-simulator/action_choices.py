@@ -17,17 +17,26 @@
 #             return proposed_bid
 
 
-def free_mortgage(player, asset): # if the asset is not mortgage-able (which means it's not own-able, an exception is automatically raised)
+def free_mortgage(player, asset):
+    """
+    Free mortgage
+    :param player: A Player instance.
+    :param asset:  A Location instance that is purchaseable (real estate, railroad or utility). If the asset is not
+    purchaseable an Exception will automatically be raised.
+    :return:
+    """
+    print player.player_name, ' is attempting to free up mortgage on asset ',asset.name
     if asset.owned_by != player:
-        print 'player is trying to free up mortgage on property that is not theirs'
+        print player.player_name,' is trying to free up mortgage on property that is not theirs'
         return -1
     elif asset.is_mortgaged is False or asset not in player.mortgaged_assets: # the or is unnecessary but serves as a check
-        print 'property is not mortgaged to begin with'
+        print asset.name,'  is not mortgaged to begin with'
         return -1
     elif player.current_cash <= 1.1 * asset.mortgage:
-        print 'player does not have cash to free this mortgage'
+        print player.player_name,' does not have cash to free mortgage on asset ',asset.name
         return -1
     else:
+        player.pay_cash_and_free_mortgage(asset)
         asset.is_mortgaged = False
         player.current_cash -= (1.1 * asset.mortgage)
         player.mortgaged_assets.remove(asset)
@@ -208,18 +217,24 @@ def roll_die(die_objects, choice):
 def buy_property(player, asset, current_gameboard): # you must have enough cash for this asset + it must belong to the bank
 
     # Note: the only way to buy a property from another player is if they offer to sell it to you and you accept the offer.
-    if asset.owned_by != 'bank':
+    if asset.owned_by != current_gameboard['bank']:
+        print asset.name,' is not owned by Bank! Resetting option_to_buy for player and returning code -1'
+        player.reset_option_to_buy()
         return -1
 
     if player.current_cash < asset.price:
-        # property has to go up for auction
+        # property has to go up for auction.
         index_current_player = current_gameboard['players'].index(player)  # in players, find the index of the current player
         starting_player_index = (index_current_player + 1) % len(current_gameboard['players'])  # the next player's index. this player will start the auction
+        player.reset_option_to_buy()
+        print asset.name, ' is going up for auction since ', player.player_name, ' does not have enough cash to purchase this property. Conducting auction and returning -1'
         current_gameboard['bank'].auction(starting_player_index, current_gameboard, asset)
         return -1 # this is a -1 even though you may still succeed in buying the property at auction
     else:
-        player.current_cash -= asset.price
+        print 'Charging ',player.player_name, ' amount ',str(asset.price),' for asset ',asset.name
+        player.charge_player(asset.price)
         asset.update_asset_owner(player, current_gameboard)
+        print asset.name, ' ownership has been updated! Resetting option_to_buy for player and returning code 1'
         player.reset_option_to_buy()
         return 1
 
