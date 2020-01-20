@@ -274,6 +274,9 @@ class Player(object):
                 print current_location.name,' is owned by Bank. Setting _option_to_buy to true for ',self.player_name
                 self._option_to_buy = True
                 return
+            elif current_location.owned_by == self:
+                print current_location.name,' is owned by current player. Player does not need to do anything.'
+                return
             elif current_location.is_mortgaged is True:
                 print current_location.name, ' is mortgaged. Player does not have to do or pay anything. Returning...'
                 return
@@ -291,6 +294,9 @@ class Player(object):
                 print current_location.name, ' is owned by Bank. Setting _option_to_buy to true for ', self.player_name
                 self._option_to_buy = True
                 return
+            elif current_location.owned_by == self:
+                print current_location.name,' is owned by current player. Player does not need to do anything.'
+                return
             elif current_location.is_mortgaged is True:
                 print current_location.name, ' is mortgaged. Player does not have to do or pay anything. Returning...'
                 return
@@ -306,6 +312,9 @@ class Player(object):
             if 'bank.Bank' in str(type(current_location.owned_by)):
                 print current_location.name, ' is owned by Bank. Setting _option_to_buy to true for ', self.player_name
                 self._option_to_buy = True
+                return
+            elif current_location.owned_by == self:
+                print current_location.name,' is owned by current player. Player does not need to do anything.'
                 return
             elif current_location.is_mortgaged is True:
                 print current_location.name, ' is mortgaged. Player does not have to do or pay anything. Returning...'

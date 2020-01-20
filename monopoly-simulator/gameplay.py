@@ -14,13 +14,15 @@ def simulate_game_instance(game_elements, np_seed=6):
     game_elements['choice_function'] = np.random.choice
     num_die_rolls = 0
     game_elements['go_increment'] = 20 # we should not be modifying this here. It is only for testing purposes.
+    # One reason to modify go_increment is if your decision agent is not aggressively trying to monopolize. Since go_increment
+    # by default is 200 it can lead to runaway cash increases for simple agents like ours.
 
     print 'players will play in the following order: ','->'.join([p.player_name for p in game_elements['players']])
     print 'Beginning play. Rolling first die...'
     current_player_index = 0
     num_active_players = 4
+    winner = None
 
-    loop_count = 0
     while num_active_players > 1:
         current_player = game_elements['players'][current_player_index]
         while current_player.status == 'lost':
@@ -54,20 +56,16 @@ def simulate_game_instance(game_elements, np_seed=6):
         r = roll_die(game_elements['dies'], np.random.choice)
         num_die_rolls += 1
         game_elements['current_die_total'] = sum(r)
-        # print sum(r)
+        print 'dies have come up ',str(r)
         if not current_player.currently_in_jail:
             move_player_after_die_roll(current_player, sum(r), game_elements, check_for_go=True)
             current_player.process_move_consequences(game_elements)
-            # print 'checkpoint 2'
+
             # post-roll for current player. No out-of-turn moves allowed at this point.
             current_player.make_post_roll_moves(game_elements)
 
         else:
             current_player.currently_in_jail = False # the player is only allowed to skip one turn (i.e. this one)
-
-        # print 'checkpoint 3'
-
-        # check for bankruptcy
 
         if current_player.current_cash < 0:
             code = current_player.handle_negative_cash_balance(current_player, game_elements)
@@ -76,28 +74,32 @@ def simulate_game_instance(game_elements, np_seed=6):
                 num_active_players -= 1
                 diagnostics.print_asset_owners(game_elements)
                 diagnostics.print_player_cash_balances(game_elements)
+
+                if num_active_players == 1:
+                    for p in game_elements['players']:
+                        if p.status != 'lost':
+                            winner = p
+                            p.status = 'won'
         else:
             current_player.status = 'waiting_for_move'
 
-        current_player_index += 1
-        current_player_index = current_player_index%len(game_elements['players'])
+        current_player_index = (current_player_index+1)%len(game_elements['players'])
 
-        if diagnostics.max_cash_balance(game_elements) > 300000:
+        if diagnostics.max_cash_balance(game_elements) > 300000: # this is our limit for runaway cash for testing purposes only.
+                                                                 # We print some diagnostics and return if any player exceeds this.
             diagnostics.print_asset_owners(game_elements)
             diagnostics.print_player_cash_balances(game_elements)
             return
 
-        # loop_count += 1
-        # if loop_count >= 20:
-        #     break
-
-
+    # let's print some numbers
     print 'printing final asset owners: '
     diagnostics.print_asset_owners(game_elements)
     print 'number of dice rolls: ',str(num_die_rolls)
     print 'printing final cash balances: '
     diagnostics.print_player_cash_balances(game_elements)
 
+    if winner:
+        print 'We have a winner: ', winner.player_name
 
 def set_up_board(game_schema_file_path, player_decision_agents):
     game_schema = json.load(open(game_schema_file_path, 'r'))
