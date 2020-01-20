@@ -1,170 +1,302 @@
-
-
-#IGNORE
-# def bid_on_property(player, current_gameboard, asset, current_bid, bidding_strategy_function):
-#     # bidding strategy function is what you use to decide what/how to bid. See decision_agent_1 for examples.
-#     # make it return 0 (or any number less than current_bid) at any time to drop out.
-#     if asset.owned_by != 'bank':
-#         print 'bidding can only happen on bank-owned properties!'
-#         raise Exception
-#     elif player.current_cash <= current_bid:
-#         return 0 # player is dropping out of auction
-#     else:
-#         proposed_bid = bidding_strategy_function(player, current_gameboard, asset, current_bid)
-#         if proposed_bid <= current_bid:
-#             return 0
-#         else:
-#             return proposed_bid
-
-
 def free_mortgage(player, asset):
     """
-    Free mortgage
+    Action for freeing player's mortgage on asset.
     :param player: A Player instance.
     :param asset:  A Location instance that is purchaseable (real estate, railroad or utility). If the asset is not
     purchaseable an Exception will automatically be raised.
-    :return:
+    :return: 1 if the player has succeeded in freeing the mortgage on asset, otherwise -1
     """
     print player.player_name, ' is attempting to free up mortgage on asset ',asset.name
     if asset.owned_by != player:
-        print player.player_name,' is trying to free up mortgage on property that is not theirs'
+        print player.player_name,' is trying to free up mortgage on property that is not theirs','. Returning -1'
         return -1
     elif asset.is_mortgaged is False or asset not in player.mortgaged_assets: # the or is unnecessary but serves as a check
-        print asset.name,'  is not mortgaged to begin with'
+        print asset.name,'  is not mortgaged to begin with','. Returning -1'
         return -1
     elif player.current_cash <= 1.1 * asset.mortgage:
-        print player.player_name,' does not have cash to free mortgage on asset ',asset.name
+        print player.player_name,' does not have cash to free mortgage on asset ',asset.name,'. Returning -1'
         return -1
     else:
-        player.pay_cash_and_free_mortgage(asset)
+        player.charge_player(1.1 * asset.mortgage)
+        print player.player_name,"Player has paid down mortgage with interest. Setting status of asset to unmortgaged, and removing asset from player's mortgaged set"
         asset.is_mortgaged = False
-        player.current_cash -= (1.1 * asset.mortgage)
         player.mortgaged_assets.remove(asset)
-        return 1 # mortgage has successfully been freed
+        print 'Mortgage has successfully been freed. Returning 1'
+        return 1
 
 
-def make_sell_property_offer(from_player, asset, to_player, price): #the property is only sold
-    # if the buyer invokes accept_sell_property_offer when it is their turn next.
+def make_sell_property_offer(from_player, asset, to_player, price):
+    """
+    Action for one player to make an offer to another player to see an asset they possess at an offering price. Note that
+    the property is only sold and exchanges hands if to_player invokes accept_sell_property_offer when it is their turn next
+    :param from_player: Player instance. The player who is offering to sell.
+    :param asset: purchaseable Location instance. The asset on which the offer is being made.
+    :param to_player: Player instance. The player to whom the offer is being made.
+    :param price: An integer. The price at which from_player is offering to sell asset to to_player
+    :return: 1 if the player succeeds in making the offer (doesn't mean the other player has to accept), otherwise -1
+    """
+
     if to_player.is_property_offer_outstanding:
-        print 'player already has a property offer. You must wait'
+        print to_player.player_name,' already has a property offer. You must wait. Returning -1'
         return -1
     elif asset.owned_by != from_player:
-        print 'player does not own this property and cannot make an offer'
+        print from_player.player_name,'player does not own this property and cannot make an offer. Returning -1'
         return -1
     elif asset.loc_class == 'real_estate' and (asset.num_houses > 0 or asset.num_hotels > 0):
-        print 'Property has improvements. Clear them before making an offer!' # note that this entails a risk since you
+        print asset.name,' has improvements. Clear them before making an offer! Returning -1' # note that this entails a risk since you
         # could clear the improvements, and still not get an offer accepted. Decide at your own peril!
         return -1
     else:
+        print 'Instantiating data structures outstanding_property_offer and setting is_property_offer_outstanding to True to enable property offer to ',to_player.player_name
         to_player.outstanding_property_offer['asset'] = asset
         to_player.outstanding_property_offer['from_player'] = from_player
         to_player.outstanding_property_offer['price'] = price
         to_player.is_property_offer_outstanding = True
+        print 'Offer has been made.'
         return 1 # offer has been made
 
 
-def sell_property(player, asset): # buyer is always the bank. if buyer is not bank, then use make_sell_property_offer
-    # we allow you to sell mortgaged properties. The bank will deduct what it is due before paying you if the property is mortgaged.
+def sell_property(player, asset, current_gameboard):
+    """
+    Action to sell asset to bank. Note that while we allow you to sell mortgaged properties, the bank will deduct what
+    it is due before paying you if the property is mortgaged.
+    :param player: Player instance. Player who is attempting to sell the property
+    :param asset: purchaseable Location instance. The asset to be sold to the bank.
+    :param current_gameboard: A dict. The global data structure representing the current game board.
+    :return: 1 if the sale is successful, -1 otherwise.
+    """
+
     if asset.owned_by != player:
-        print 'Player does not own this property and cannot sell it'
+        print player.player_name,' does not own this property and cannot sell it. Returning -1'
         return -1
 
     elif asset.num_houses > 0 or asset.num_hotels > 0 :
-        print 'Property has improvements. Clear them before trying to sell!'
+        print asset.name,' has improvements. Clear them before trying to sell! Returning -1'
         return -1
 
     else:
-        cash_due = _transfer_property_to_bank(player, asset)
+        print 'Transferring property to bank'
+        cash_due = asset.transfer_property_to_bank(player, current_gameboard)
+        print 'Transfer successful. Paying player what they are due for the property and returning 1...'
         player.receive_cash(cash_due)
         return 1 # property has been successfully sold
 
 
-def sell_house_hotel(player, asset, sell_house=True, sell_hotel=False): # we can only sell houses or hotels to the bank
-    # some checks to ensure the player is allowed to sell houses and hotels.
+def sell_house_hotel(player, asset, current_gameboard, sell_house=True, sell_hotel=False):
+    """
+    Action for player to see either house or hotel on asset that they own. Note that player can only sell houses or hotels to the bank.
+    :param player: Player instance.
+    :param asset: RealEstateLocation instance.
+    :param current_gameboard: A dict. The global data structure representing the current game board.
+    :param sell_house: A boolean. True if player wants to sell a house on asset.
+    :param sell_hotel: A boolean. True if player wants to sell a hotel on asset.
+    :return: 1 if sale goes through, otherwise -1
+    """
+
     if asset.owned_by != player:
-        print 'player does not own this property and cannot make an offer'
+        print player.player_name,' does not own this property and cannot make an offer. Returning -1'
         return -1
+    elif asset.loc_class != 'real_estate':
+        print asset.name, ' is not real estate. Returning -1'
+        return -1
+    elif asset.num_hotels == 0 and sell_hotel:
+        print 'There are no hotels to sell. Returning -1'
+        return -1
+    elif asset.num_houses == 0 and sell_house:
+        print 'There are no houses to sell. Returning -1'
+        return -1
+
+    if sell_hotel: # this is the simpler case
+        print 'Looking to sell hotel on ',asset.name
+        flag = True
+        for same_colored_asset in current_gameboard['color_assets'][asset.color]:
+            if same_colored_asset == asset:
+                continue
+            if same_colored_asset.num_hotels != 1: # if there are no hotels on other properties, it means that
+                # the uniform improvement rule will be broken if we see a hotel on this property.
+                flag = False
+                break
+        if flag:
+            print 'Selling hotel and updating num_total_hotels and num_total_houses.'
+            player.num_total_hotels -= 1
+            print player.player_name,' now has num_total_hotels ',str(player.num_total_hotels),' and num_total_houses ',str(player.num_total_houses)
+            print 'Paying player for sale.'
+            player.receive_cash((asset.price_per_house*4)/2) # player only gets half the initial cost back. Recall that you can sell the entire hotel or not at all.
+            print 'Updating houses and hotels on the asset'
+            asset.num_houses = 0 # this should already be 0 but just in case
+            asset.num_hotels = 0
+            print 'Player has successfully sold hotel. Returning 1'
+            return 1
+
+        else:
+            print 'All same-colored properties must stay uniformly improved for you to sell a hotel on this property. ' \
+                  'You may need to build hotels on other properties of the same color before attempting to sell this one. Returning -1'
+            return -1
+
+    elif sell_house:
+        print 'Looking to sell house on ', asset.name
+        flag = True
+        current_asset_num_houses = asset.num_houses
+        for same_colored_asset in current_gameboard['color_assets'][asset.color]:
+            if same_colored_asset == asset:
+                continue
+            if same_colored_asset.num_houses > current_asset_num_houses or same_colored_asset.num_hotels == 1:
+                flag = False
+                break
+        if flag:
+            print 'Selling house and updating num_total_houses.'
+            player.num_total_houses -= 1
+            print player.player_name, ' now has num_total_hotels ', str(
+                player.num_total_hotels), ' and num_total_houses ', str(player.num_total_houses)
+            print 'Paying player for sale.'
+            player.receive_cash(asset.price_per_house/2)
+            print 'Updating houses and hotels on the asset'
+            asset.num_houses -= 1
+            print 'Player has successfully sold house. Returning 1'
+            return 1
+
+        else:
+            print 'All same-colored properties must stay uniformly improved for you to sell a house on this property. ' \
+                  'You may need to build houses on other properties of the same color before attempting to sell this one. Returning -1'
+            return -1
 
 
 def accept_sell_property_offer(player, current_gameboard):
+    """
+    Action for player to decide whether they should accept an outstanding property offer.
+    :param player: Player instance. player must decide whether to accept an outstanding property offer. If the offer is accepted,
+    we will begin property transfer.
+    :param current_gameboard: A dict. The global data structure representing the current game board.
+    :return: 1 if the property offer is accepted and property is successfully transferred, otherwise -1.
+    """
     if not player.is_property_offer_outstanding:
-        print 'no outstanding property offers to accept'
+        print player.player_name,' does not have outstanding property offers to accept. Returning -1'
         return -1
     elif player.current_cash <= player.outstanding_property_offer['price']:
-        print 'player does not have the cash necessary to accept'
+        print player.player_name,' does not have the cash necessary to accept. Nulling outstanding property offers data structures and returning -1'
         player.is_property_offer_outstanding = False
         player.outstanding_property_offer['from_player'] = None
         player.outstanding_property_offer['asset'] = None
         player.outstanding_property_offer['price'] = -1
         return -1
     else:
-        player.is_property_offer_outstanding = False
-        player.current_cash -= player.outstanding_property_offer['price']
+        print 'Initiating property transfer...'
+        player.outstanding_property_offer['asset'].transfer_property_between_players(player.outstanding_property_offer['from_player'],
+                           player, current_gameboard)
+
+        print 'Initiating cash transfer from one player to another'
+        player.charge_player(player.outstanding_property_offer['price'])
         player.outstanding_property_offer['from_player'].receive_cash(player.outstanding_property_offer['price'])
-        _transfer_property(player.outstanding_property_offer['asset'], player.outstanding_property_offer['from_player'], player, current_gameboard)
+
+        print 'Transaction successful. Nulling outstanding property offers data structures and returning 1'
+        player.is_property_offer_outstanding = False
+        player.outstanding_property_offer['from_player'] = None
+        player.outstanding_property_offer['asset'] = None
+        player.outstanding_property_offer['price'] = -1
         return 1
 
+
 def skip_turn():
+    """
+    Use this action when you want to skip the turn i.e. you want to move on without taking any action at all in either
+    pre-roll or out-of-turn phases
+    :return: 2
+    """
     return 2 # uses special code, since we need it in gameplay
 
 
 def concluded_actions():
+    """
+    Use this to conclude a post-roll phase, or to signal that you are done acting in a pre-roll or out-of-turn phase
+    if your first action was not skip_turn.
+    :return: 1
+    """
     return 1 # does nothing; code is always a success
 
 
 def mortgage_property(player, asset):
+    """
+    Action for player to mortgage asset.
+    :param player: Player instance. The player wants to mortgage asset
+    :param asset:  Purchaseable Location instance (railroad, utility or real estate).
+    :return: 1 if the mortgage has gone through, -1 otherwise.
+    """
     if asset.owned_by != player:
-        print 'player is trying to mortgage property that is not theirs'
+        print player.player_name,' is trying to mortgage property that is not theirs. Returning -1'
         return -1
     elif asset.is_mortgaged is True or asset in player.mortgaged_assets: # the or is unnecessary but serves as a check
-        print 'property is already mortgaged to begin with'
+        print asset.name,' is already mortgaged to begin with...Returning -1'
         return -1
     elif asset.loc_class == 'real_estate' and (asset.num_houses > 0 or asset.num_hotels > 0):
-        print 'property has improvements. remove improvements before attempting mortgage'
+        print asset.name,' has improvements. Remove improvements before attempting mortgage. Returning -1'
         return -1
     else:
+        print "Setting asset to mortgage status and adding to player's mortgaged assets"
         asset.is_mortgaged = True
-        player.receive_cash(1.1 * asset.mortgage)
         player.mortgaged_assets.add(asset)
+        player.receive_cash(asset.mortgage)
+        print "Property has been mortgaged and player has received cash. Returning 1"
         return 1 # property has been successfully mortgaged
 
 
 def improve_property(player, asset, current_gameboard, add_house=True, add_hotel=False):
+    """
+    Function for improving asset belonging to player by adding house or hotel.
+    Another thing to remember is that once you add a hotel, it stands as its own unit. If you decide to sell, you'll
+    have to sell the entire hotel or not at all.
+    :param player: Player instance. The player who is attempting to improve an asset by building houses or hotels.
+    :param asset: RealEstateLocation instance.
+    :param current_gameboard: A dict. The global data structure representing the current game board.
+    :param add_house: A Boolean. True if you want to add a house to asset.
+    :param add_hotel: A Boolean. True if you want to add a hotel to asset.
+    :return: 1 if player has successfully managed to improve property or -1 otherwise.
+    """
     if asset.owned_by != player or asset.is_mortgaged or asset.color not in player.full_color_sets_possessed or \
         player.current_cash < asset.price_per_house:
         # these are the usual conditions that we verify before allowing any improvement to proceed
-        print 'player is not permitted to/cannot afford to improve this property'
+        print player.player_name,' is not permitted to/cannot afford to improve this property. Returning -1'
+        return -1
+    elif asset.loc_class != 'real_estate':
+        print asset.name,' is not real estate and cannot be improved. Returning -1'
         return -1
 
     if add_hotel: # this is the simpler case
+        print 'Looking to improve ',asset.name,' by adding a hotel.'
         if asset.num_hotels == 1:
-            print 'there is already a hotel here. You are only permitted one...'
+            print 'There is already a hotel here. You are only permitted one. Returning -1'
             return -1
         elif asset.num_houses != 4:
-            print 'you need to have four houses before you can build a hotel...'
+            print 'You need to have four houses before you can build a hotel...Returning -1'
             return -1
         flag = True
         for same_colored_asset in current_gameboard['color_assets'][asset.color]:
             if same_colored_asset == asset:
                 continue
-            if not (same_colored_asset.num_houses == 4 or same_colored_asset.num_hotels == 1):
+            if not (same_colored_asset.num_houses == 4 or same_colored_asset.num_hotels == 1): # as long as all other houses
+                # of that color have either 4 houses or a hotel, we can build a hotel on this asset.
                 flag = False
                 break
         if flag:
-            player.num_total_hotels = 1
+            print 'Improving asset and updating num_total_hotels and num_total_houses.'
+            player.num_total_hotels += 1
             player.num_total_houses -= asset.num_houses
-            player.current_cash -= asset.price_per_house
+            print player.player_name,' now has num_total_hotels ',str(player.num_total_hotels),' and num_total_houses ',str(player.num_total_houses)
+            print 'Charging player for improvements.'
+            player.charge_player(asset.price_per_house)
+            print 'Updating houses and hotels on the asset'
             asset.num_houses = 0
             asset.num_hotels = 1
-            return 1 # player has successfully improved property
+            print 'Player has successfully improved property. Returning 1'
+            return 1
 
         else:
-            print 'all same-colored properties must be informly improved first before you can build a hotel on this property'
+            print 'All same-colored properties must be informly improved first before you can build a hotel on this property. Returning -1'
             return -1
 
     elif add_house:
+        print 'Looking to improve ', asset.name, ' by adding a house.'
         if asset.num_hotels == 1 or asset.num_houses == 4:
-            print 'there is already a hotel or 4 houses here. You are not permitted another house.'
+            print 'There is already a hotel or 4 houses here. You are not permitted another house. Returning -1'
             return -1
         flag = True
         current_asset_num_houses = asset.num_houses
@@ -175,48 +307,93 @@ def improve_property(player, asset, current_gameboard, add_house=True, add_hotel
                 flag = False
                 break
         if flag:
+            print 'Improving asset and updating num_total_houses.'
             player.num_total_houses += 1
-            player.current_cash -= asset.price_per_house
+            print player.player_name, ' now has num_total_hotels ', str(
+                player.num_total_hotels), ' and num_total_houses ', str(player.num_total_houses)
+            print 'Charging player for improvements.'
+            player.charge_player(asset.price_per_house)
+            print 'Updating houses and hotels on the asset'
             asset.num_houses += 1
-            return 1 # player has successfully improved property
+            print 'Player has successfully improved property. Returning 1'
+            return 1
 
         else:
-            print 'all same-colored properties must be informly improved first before you can build a hotel on this property'
+            print 'All same-colored properties must be informly improved first before you can build a hotel on this property. Returning -1'
             return -1
 
 
 def use_get_out_of_jail_card(player, current_gameboard):
+    """
+    Function for player to use a get_out_of_jail_free card.
+    :param player: Player instance. Player who is trying to use get_out_of_jail_card. We give first preference to the
+    card that is drawn from the chance pack, assuming the player has both cards.
+    :param current_gameboard: A dict. The global data structure representing the current game board.
+    :return: 1 if the player has successfully used get out of jail card, or -1 otherwise.
+    """
     if not player.currently_in_jail:
+        print 'Player is not currently in jail and cannot use the card. Returning -1'
         return -1 # simple check. note that player will still have the card(s)
 
     if player.has_get_out_of_jail_chance_card: # we give first preference to chance, then community chest
+        print 'Player has get_out_of_jail_chance card. Removing card and setting player jail status to False'
         player.has_get_out_of_jail_chance_card = False
         player.currently_in_jail = False
+        print 'Adding the card back again to the chance pack.'
         current_gameboard['chance_cards'].add(current_gameboard['chance_card_objects']['get_out_of_jail_free'])
+        print 'Returning 1'
         return 1
     elif player.has_get_out_of_jail_community_chest_card:
+        print 'Player has get_out_of_jail_community_chest card. Removing card and setting player jail status to False'
         player.has_get_out_of_jail_community_chest_card = False
         player.currently_in_jail = False
+        print 'Adding the card back again to the community chest pack.'
         current_gameboard['community_chest_cards'].add(current_gameboard['community_chest_card_objects']['get_out_of_jail_free'])
+        print 'Returning 1'
         return 1
+    else:
+        print 'Player does not possess a get_out_of_jail free card! Returning -1'
+        return -1
 
 
-def pay_jail_fine(player): # if you don't have enough cash, you'll stay in jail.
+def pay_jail_fine(player):
+    """
+    If you don't have enough cash, you'll stay in jail. Otherwise, the fine will be charged and you will be out of jail.
+    :param player: Player instance.
+    :return: 1 if the fine payment succeeds, otherwise -1
+    """
     if player.current_cash >= 50 and player.currently_in_jail:
-        player.current_cash -= 50
+        player.charge_player(50)
+        print 'Player has been charged the fine. Setting currently_in_status to False and returning 1'
         player.currently_in_jail = False
         return 1
     else:
-        return -1 # failure to pay fine
+        print "Either you are not in jail, or you don't have the cash for the fine. Returning -1"
+        return -1
 
 
 def roll_die(die_objects, choice):
+    """
+    The function takes a vector of Dice objects and for each object, samples a value. It returns a list of sampled die values.
+    :param die_objects: A vector of Dice objects.
+    :param choice: The numpy choice function.
+    :return:
+    """
+    print 'rolling die...'
     return [choice(a=d.die_state) for d in die_objects]
 
 
-def buy_property(player, asset, current_gameboard): # you must have enough cash for this asset + it must belong to the bank
-
-    # Note: the only way to buy a property from another player is if they offer to sell it to you and you accept the offer.
+def buy_property(player, asset, current_gameboard):
+    """
+    Action for player to buy asset from bank. Player must also have enough cash for the asset. Note that if the asset
+    does not belong to the bank, the only way currently for player to buy it is if the owner offers to sell it
+    and the player accepts the offer.
+    :param player: Player instance. The player wants to buy asset
+    :param asset: Purchaseable Location instance (railroad, utility or real estate). The asset must currently be owned by the bank
+    :param current_gameboard: A dict. The global data structure representing the current game board.
+    :return: 1 if player has succeeded in buying the property, -1 if either the player has failed OR if the property ended
+    up going to auction (in the latter case, the player may still succeed in obtaining the asset!)
+    """
     if asset.owned_by != current_gameboard['bank']:
         print asset.name,' is not owned by Bank! Resetting option_to_buy for player and returning code -1'
         player.reset_option_to_buy()
@@ -238,40 +415,6 @@ def buy_property(player, asset, current_gameboard): # you must have enough cash 
         player.reset_option_to_buy()
         return 1
 
-
-def _transfer_property(asset, from_player, to_player, current_gameboard):
-    _remove_asset_from_player(from_player, asset) # it's important to note that between this statement and the next, the asset/players will be in a state of flux
-    asset.update_asset_owner(to_player, current_gameboard)
-
-
-def _transfer_property_to_bank(player, asset):
-    asset.owned_by = 'bank'
-    cash_due = asset.price/2
-    cash_owed = 0
-    if asset.loc_class == 'real_estate' and (asset.num_houses > 0 or asset.num_hotels > 0):
-        print 'Bank error! property being sold has improvements on it'
-        return
-    if asset.is_mortgaged:
-        asset.is_mortgaged = False
-        player.mortgaged_assets.remove(asset)
-        cash_owed = 1.1*asset.mortgage
-
-    _remove_asset_from_player(player, asset)
-
-    return cash_due-cash_owed
-
-
-def _remove_asset_from_player(player, asset):
-    player.assets.remove(asset)
-    if asset.loc_class == 'railroad':
-        player.num_railroads_possessed -= 1
-    elif asset.loc_class == 'utility':
-        player.num_utilities_possessed -= 1
-    elif asset.color in player.full_color_sets_possessed:  # the asset must have a color (i.e. be real estate if it is not railroad or utility)
-        player.full_color_sets_possessed.remove(asset.color)
-
-    if asset.is_mortgaged:
-        player.mortgaged_assets.remove(asset)
 
 
 

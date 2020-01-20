@@ -7,7 +7,12 @@ import json
 import diagnostics
 
 def simulate_game_instance(game_elements, np_seed=6):
-
+    """
+    Simulate a game instance.
+    :param game_elements: The dict output by set_up_board
+    :param np_seed: The numpy seed to use to control randomness.
+    :return: None
+    """
     np.random.seed(np_seed)
     np.random.shuffle(game_elements['players'])
     game_elements['seed'] = np_seed
@@ -101,11 +106,17 @@ def simulate_game_instance(game_elements, np_seed=6):
     if winner:
         print 'We have a winner: ', winner.player_name
 
+    return
+
+
 def set_up_board(game_schema_file_path, player_decision_agents):
     game_schema = json.load(open(game_schema_file_path, 'r'))
     return initialize_game_elements.initialize_board(game_schema, player_decision_agents)
 
 
+# this is where everything begins. Assign decision agents to your players, set up the board and start simulating! You can
+# control any number of players you like, and assign the rest to the simple agent. We plan to release a more sophisticated
+# but still relatively simple agent soon.
 player_decision_agents = dict()
 for p in ['player_1','player_2','player_3','player_4']:
     player_decision_agents[p] = decision_agent_methods

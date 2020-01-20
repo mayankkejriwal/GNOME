@@ -167,7 +167,7 @@ class Player(object):
         This is a simple transaction where the asset gets removed from the player's portfolio.
         All of the groundwork (exchange of cash) must be done before this function is called. For safe behavior, this should always be
         accompanied by post-processing code, especially if the asset is mortgageable and/or is being sold from one player
-        to another (in which case, the bank only serves as an escrow).
+        to another.
 
         Improvements are not permitted when removing the asset. We will raise an exception if we detect houses or hotels
         when removing the asset. asset.owned_by is not updated either, make sure to invoke it (e.g., to reflect the new owner

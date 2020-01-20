@@ -22,6 +22,41 @@ class Location(object):
         else:
             self.color = color
 
+    def transfer_property_to_bank(self, player, current_gameboard):
+        """
+        This function is called when the player is selling the property back to the bank. If the property is mortgaged
+        then we deduct the mortgage-freeing cost from the cash that the player would have received if the property had
+        not been mortgaged.
+        :param player: Player instance. The property will be taken from this player and transferred to the bank
+        :param current_gameboard: A dict. The global gameboard data structure
+        :return: An integer. Specifies the amount due to the player for selling this property to the bank
+        """
+        player.remove_asset(self)
+        self.owned_by = current_gameboard['bank']
+        cash_due = self.price / 2
+        cash_owed = 0
+        if self.loc_class == 'real_estate' and (self.num_houses > 0 or self.num_hotels > 0):
+            print 'Bank error!', self.name,' being sold has improvements on it. Raising Exception'
+            raise Exception
+        if self.is_mortgaged:
+            self.is_mortgaged = False
+            cash_owed = 1.1 * self.mortgage
+
+        return cash_due - cash_owed
+
+
+    def transfer_property_between_players(self, from_player, to_player, current_gameboard):
+        """
+        Remove property from possession of from_player and transfer to to_player. Note that there is no cash transfer
+        happening here; any such cash transfer must be done outside the function.
+        :param from_player: Player instance.
+        :param to_player: Player instance.
+        :param current_gameboard: A dict. The global gameboard data structure
+        :return: None
+        """
+        from_player.remove_asset(self)
+        self.update_asset_owner(to_player, current_gameboard)
+
     def update_asset_owner(self, player, current_gameboard):
         """
         If the asset is non-purchaseable, we will raise an exception. A more elegant way (we'll make this change
