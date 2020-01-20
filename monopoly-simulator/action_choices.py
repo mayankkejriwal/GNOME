@@ -202,6 +202,7 @@ def skip_turn():
     pre-roll or out-of-turn phases
     :return: 2
     """
+    print 'player is skipping turn'
     return 2 # uses special code, since we need it in gameplay
 
 
@@ -211,6 +212,7 @@ def concluded_actions():
     if your first action was not skip_turn.
     :return: 1
     """
+    print 'player has concluded actions'
     return 1 # does nothing; code is always a success
 
 
