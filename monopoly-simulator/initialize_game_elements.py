@@ -47,9 +47,16 @@ def _initialize_bank(game_elements):
 
 
 def _initialize_locations(game_elements, game_schema):
-    location_objects = dict()
-    railroad_positions = list()
-    utility_positions = list()
+    location_objects = dict() # key is a location name, and value is a Location object
+    railroad_positions = list() # list of integers, with each integer corresponding to a railroad location in
+    # game_elements['location_sequence']
+    utility_positions = list() # list of integers, with each integer corresponding to a utility location in
+    # game_elements['location_sequence']
+    location_sequence = list() # list of Location objects in sequence, as they would be ordered on a linear game board.
+    color_assets = dict()  # key is a string color (of a real estate property) and value is the set of location objects
+    # that have that color. Any asset that does not have a color or where the color is None in the schema will not be
+    # included in any set, since we do not insert None in as a key
+
     for l in game_schema['locations']['location_states']:
 
         if l['loc_class'] == 'action':
@@ -62,7 +69,7 @@ def _initialize_locations(game_elements, game_schema):
 
         elif l['loc_class'] == 'real_estate':
             real_estate_args = l.copy()
-            real_estate_args['owned_by'] = 'bank'
+            real_estate_args['owned_by'] = game_elements['bank']
             real_estate_args['num_houses'] = 0
             real_estate_args['num_hotels'] = 0
             location_objects[l['name']] = location.RealEstateLocation(**real_estate_args)
@@ -72,26 +79,29 @@ def _initialize_locations(game_elements, game_schema):
 
         elif l['loc_class'] == 'railroad':
             railroad_args = l.copy()
-            railroad_args['owned_by'] = 'bank'
+            railroad_args['owned_by'] = game_elements['bank']
             location_objects[l['name']] = location.RailroadLocation(**railroad_args)
 
         elif l['loc_class'] == 'utility':
             utility_args = l.copy()
-            utility_args['owned_by'] = 'bank'
+            utility_args['owned_by'] = game_elements['bank']
             location_objects[l['name']] = location.UtilityLocation(**utility_args)
 
         else:
             print 'encountered unexpected location class: ', l['loc_class']
             raise Exception
 
-    location_sequence = list()
     for i in range(0, len(game_schema['location_sequence'])):
-        location_sequence.append(location_objects[game_schema['location_sequence'][i]])
-        if location_objects[game_schema['location_sequence'][i]].loc_class == 'railroad':
+        loc = location_objects[game_schema['location_sequence'][i]]
+        location_sequence.append(loc) # we first get the name of
+        # the location at index i of the game schema, and then use it in location_objects to get the actual location
+        # object (loc) corresponding to that location name. We then append it to location_sequence. The net result is
+        # that we have gone from a sequence of location names to the corresponding sequence of objects.
+        if loc.loc_class == 'railroad':
             railroad_positions.append(i)
-        elif location_objects[game_schema['location_sequence'][i]].loc_class == 'utility':
+        elif loc.loc_class == 'utility':
             utility_positions.append(i)
-        elif location_objects[game_schema['location_sequence'][i]].name == 'In Jail/Just Visiting':
+        elif loc.name == 'In Jail/Just Visiting':
             game_elements['jail_position'] = i
 
     game_elements['railroad_positions'] = railroad_positions
@@ -112,9 +122,13 @@ def _initialize_locations(game_elements, game_schema):
     game_elements['location_objects'] = location_objects
     game_elements['location_sequence'] = location_sequence
 
-    color_assets = dict()  # we will not put anything in here that does not have a color.
     for o in location_sequence:
-        if o.color and o.color in game_schema['players']['player_states']['full_color_sets_possessed'][0]:
+        if o.color is None:
+            continue
+        elif o.color not in game_schema['players']['player_states']['full_color_sets_possessed'][0]:
+            print o.color
+            raise Exception
+        else:
             if o.color not in color_assets:
                 color_assets[o.color] = set()
             color_assets[o.color].add(o)
@@ -136,14 +150,20 @@ def _initialize_dies(game_elements, game_schema):
 
 
 def _initialize_cards(game_elements, game_schema):
-    community_chest_cards = set()
-    chance_cards = set()
+    community_chest_cards = set() # community chest card objects
+    chance_cards = set() # chance card objects
 
-    community_chest_card_objects = dict()
-    chance_card_objects = dict()
-    card_obj = None
+    community_chest_card_objects = dict() # key is a community chest card name and value is an object
+    chance_card_objects = dict() # key is a chance card name and value is an object
+
+    # note that the number of keys in community_chest_card_objects may be different from the number of items in
+    # community_chest_cards (same for chance), since if there is more than one card with the same name, we will end up having
+    # fewer keys in the _objects data structure. In the _cards data structure we directly add the objects, so even
+    # if two cards share a name, they will be treated as distinct objects. We do an additional check after the for
+    # loop to verify that we have the expected numbers of cards as specified in the game schema.
+
     for specific_card in game_schema['cards']['community_chest']['card_states']:
-
+        card_obj = None
         if specific_card['card_type'] == 'movement':
             for i in range(0, specific_card['num']):
                 card_args = specific_card.copy()
@@ -197,9 +217,8 @@ def _initialize_cards(game_elements, game_schema):
     if len(community_chest_cards) != game_schema['cards']['community_chest']['card_count']:
         print 'community chest card count and number of items in community chest card set are inconsistent'
 
-    card_obj = None
     for specific_card in game_schema['cards']['chance']['card_states']:
-
+        card_obj = None
         if specific_card['card_type'] == 'movement':
             for i in range(0, specific_card['num']):
                 card_args = specific_card.copy()

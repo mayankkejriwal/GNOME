@@ -13,13 +13,14 @@ def simulate_game_instance(game_elements, np_seed=6):
     game_elements['seed'] = np_seed
     game_elements['choice_function'] = np.random.choice
     num_die_rolls = 0
-    game_elements['go_increment'] = 0 # we should not be modifying this here. It is only for testing purposes.
+    # game_elements['go_increment'] = 0 # we should not be modifying this here. It is only for testing purposes.
 
     print 'players will play in the following order: ','->'.join([p.player_name for p in game_elements['players']])
     print 'Beginning play. Rolling first die...'
     current_player_index = 0
     num_active_players = 4
 
+    loop_count = 0
     while num_active_players > 1:
         current_player = game_elements['players'][current_player_index]
         while current_player.status == 'lost':
@@ -71,7 +72,7 @@ def simulate_game_instance(game_elements, np_seed=6):
         if current_player.current_cash < 0:
             code = current_player.handle_negative_cash_balance(current_player, game_elements)
             if code == -1 or current_player.current_cash < 0:
-                current_player.begin_bankruptcy_proceedings()
+                current_player.begin_bankruptcy_proceedings(game_elements)
                 num_active_players -= 1
                 diagnostics.print_asset_owners(game_elements)
                 diagnostics.print_player_cash_balances(game_elements)
@@ -85,6 +86,10 @@ def simulate_game_instance(game_elements, np_seed=6):
             diagnostics.print_asset_owners(game_elements)
             diagnostics.print_player_cash_balances(game_elements)
             return
+
+        loop_count += 1
+        if loop_count >= 30:
+            break
 
 
     diagnostics.print_asset_owners(game_elements)

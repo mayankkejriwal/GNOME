@@ -2,7 +2,7 @@ def specify_board_state():
     board_state = dict()
     board_state['board_shape'] = 'linear'
     board_state['go_position'] = 0
-    board_state['go_increment'] = 0
+    board_state['go_increment'] = 200
     # taken from https://en.wikipedia.org/wiki/Template:Monopoly_board_layout also saved in local
     board_state['location_sequence'] = ['Go','Mediterranean Avenue', 'Community Chest',
                 'Baltic Avenue', 'Income Tax', 'Reading Railroad', 'Oriental Avenue',
@@ -50,8 +50,8 @@ def _specify_player_state(num_board_positions):
     ans['player_count'] = count
     # ans['player_states'] = list()
     inner_dict = {'player_name':['player_1','player_2','player_3','player_4'],
-                  'starting_cash': 15000,
-                  'current_cash': 15000,
+                  'starting_cash': 1500,
+                  'current_cash': 1500,
                   'current_position':list(range(0,num_board_positions)),
                   'status': ['waiting_for_move', 'current_move', 'won', 'lost'],
                   'assets': ['Mediterranean Avenue',

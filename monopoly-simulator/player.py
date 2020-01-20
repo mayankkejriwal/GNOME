@@ -10,6 +10,27 @@ class Player(object):
                  make_out_of_turn_move,
                  make_post_roll_move, make_buy_property_decision, make_bid
                  ):
+        """
+
+        :param current_position: An integer.
+        :param status: A string. One of 'waiting_for_move', 'current_move', 'won' or 'lost'
+        :param has_get_out_of_jail_community_chest_card: A boolean. Self-explanatory
+        :param has_get_out_of_jail_chance_card: A boolean. Self-explanatory
+        :param current_cash: An integer. Your current cash balance.
+        :param num_railroads_possessed: An integer. Self-explanatory
+        :param player_name: A string. The name of the player
+        :param assets: A set. The items in the set are purchaseable Location objects (real estate, railroads or locations)
+        :param full_color_sets_possessed: A set. The real estate colors for which the full set is possessed by the player in assets.
+        :param currently_in_jail: A boolean. Self-explanatory but with one caveat: if you are only 'visiting' in jail, this flag will not be set to True
+        :param num_utilities_possessed: An integer. Self-explanatory
+        :param handle_negative_cash_balance: A function. Typically, this should be implemented separately in a decision agent and then passed in during
+        game initialization for this player.
+        :param make_pre_roll_move:
+        :param make_out_of_turn_move:
+        :param make_post_roll_move:
+        :param make_buy_property_decision:
+        :param make_bid:
+        """
         self.current_position = current_position # this is an integer. Use 'location_sequence' in the game schema to map position into an actual location
         self.status = status
         self.has_get_out_of_jail_chance_card = has_get_out_of_jail_chance_card
@@ -46,13 +67,13 @@ class Player(object):
         self._option_to_buy = False # this option will turn true when  the player lands on a property that could be bought.
         # We always set it to false again at the end of the post_roll phase.
 
-    def begin_bankruptcy_proceedings(self):
+    def begin_bankruptcy_proceedings(self, current_gameboard):
         self.current_position = None
         self.status = 'lost'
         self.has_get_out_of_jail_chance_card = False # if this is true, we need to place the card back in the pack
         self.has_get_out_of_jail_community_chest_card = False
         self.current_cash = 0
-        self.discharge_assets_to_bank()
+        self.discharge_assets_to_bank(current_gameboard)
         self.currently_in_jail = False
         # self._current_dues = 0
         # self._dues_recipients = list()
@@ -99,25 +120,25 @@ class Player(object):
         self.current_cash -= amount
         print self.player_name, ' now has cash: ',str(self.current_cash)
 
-    def discharge_assets_to_bank(self): # discharge assets to bank
+    def discharge_assets_to_bank(self, current_gameboard): # discharge assets to bank
         if self.assets:
             for asset in self.assets:
                 asset.is_mortgaged = False
                 if asset.loc_class == 'real_estate':
-                    asset.owned_by = 'bank'
+                    asset.owned_by = current_gameboard['bank']
                     asset.num_houses = 0
                     asset.num_hotels = 0
                 elif asset.loc_class == 'utility' or asset.loc_class == 'railroad':
-                    asset.owned_by = 'bank'
+                    asset.owned_by = current_gameboard['bank']
                 else:
                     print 'player owns asset that is not real estate, railroad or utility' # unnecessary, since an
                     # exception will be raised if is_mortgaged does not exist. But we like an extra check.
                     raise Exception
-            self.num_railroads_possessed = 0 # now we formally discharge assets on the player's side
-            self.assets = None
-            self.full_color_sets_possessed = None
-            self.num_utilities_possessed = 0
-            self.mortgaged_assets = None
+        self.num_railroads_possessed = 0 # now we formally discharge assets on the player's side
+        self.assets = None
+        self.full_color_sets_possessed = None
+        self.num_utilities_possessed = 0
+        self.mortgaged_assets = None
 
     # def handle_negative_cash_balance(self):
     #     decision_agent_1.handle_negative_cash_balance(self) # your strategy to handle this deficit
@@ -131,19 +152,19 @@ class Player(object):
         if current_location.loc_class == 'do_nothing':
             return
         elif current_location.loc_class == 'real_estate':
-            if current_location.owned_by == 'bank':
+            if 'bank.Bank' in str(type(current_location.owned_by)):
                 self._option_to_buy = True
                 return
             elif current_location.is_mortgaged is True:
                 return
             else:
-                self.calculate_and_pay_rent_dues(current_gameboard, True)
+                self.calculate_and_pay_rent_dues(current_gameboard)
                 return
         elif current_location.loc_class == 'tax':
                 self.current_cash -= current_location.amount_due
                 return
         elif current_location.loc_class == 'railroad':
-            if current_location.owned_by == 'bank':
+            if 'bank.Bank' in str(type(current_location.owned_by)):
                 self._option_to_buy = True
                 return
             elif current_location.is_mortgaged is True:
@@ -155,7 +176,7 @@ class Player(object):
                 self.current_cash -= dues
                 return
         elif current_location.loc_class == 'utility':
-            if current_location.owned_by == 'bank':
+            if 'bank.Bank' in str(type(current_location.owned_by)):
                 self._option_to_buy = True
                 return
             elif current_location.is_mortgaged is True:

@@ -1,7 +1,6 @@
 
 
-# every function in here that can be called from outside must return a success or failure (I need to modify the returns)
-
+#IGNORE
 # def bid_on_property(player, current_gameboard, asset, current_bid, bidding_strategy_function):
 #     # bidding strategy function is what you use to decide what/how to bid. See decision_agent_1 for examples.
 #     # make it return 0 (or any number less than current_bid) at any time to drop out.

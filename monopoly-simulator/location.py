@@ -17,7 +17,10 @@ class Location(object):
         self.name = name
         self.start_position = start_position
         self.end_position = end_position
-        self.color = color
+        if color == 'None':
+            self.color = None
+        else:
+            self.color = color
 
     def update_asset_owner(self, player, current_gameboard):
         """
