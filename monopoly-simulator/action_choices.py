@@ -112,8 +112,10 @@ def sell_house_hotel(player, asset, current_gameboard, sell_house=True, sell_hot
         for same_colored_asset in current_gameboard['color_assets'][asset.color]:
             if same_colored_asset == asset:
                 continue
-            if same_colored_asset.num_hotels != 1: # if there are no hotels on other properties, it means that
-                # the uniform improvement rule will be broken if we see a hotel on this property.
+            if not (same_colored_asset.num_hotels == 1 or (same_colored_asset.num_hotels == 0 and
+                                    same_colored_asset.num_houses == 0)) : # if there are no hotels on other properties,
+                # there must not be houses either, otherwise  the uniform improvement rule gets broken. The not on the
+                # outside enforces this rule.
                 flag = False
                 break
         if flag:
