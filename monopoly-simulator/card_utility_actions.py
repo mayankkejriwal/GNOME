@@ -15,6 +15,13 @@ def go_to_jail(player, current_gameboard):
     """
     print 'execute go_to_jail action for ',player.player_name
     player.send_to_jail(current_gameboard)
+    # add to game history
+    current_gameboard['history']['function'].append(player.send_to_jail)
+    params = dict()
+    params['self'] = player
+    params['current_gameboard'] = current_gameboard
+    current_gameboard['history']['param'].append(params)
+    current_gameboard['history']['return'].append(None)
 
 
 def pick_card_from_community_chest(player, current_gameboard):
@@ -32,6 +39,14 @@ def pick_card_from_community_chest(player, current_gameboard):
         print 'removing get_out_of_jail card from community chest pack'
         current_gameboard['community_chest_cards'].remove(card)
     card.action(player, card, current_gameboard) # all card actions must take this signature
+    # add to game history
+    current_gameboard['history']['function'].append(card.action)
+    params = dict()
+    params['player'] = player
+    params['card'] = card
+    params['current_gameboard'] = current_gameboard
+    current_gameboard['history']['param'].append(params)
+    current_gameboard['history']['return'].append(None)
 
 
 def pick_card_from_chance(player, current_gameboard):
@@ -49,6 +64,14 @@ def pick_card_from_chance(player, current_gameboard):
         print 'removing get_out_of_jail card from chance pack'
         current_gameboard['chance_cards'].remove(card)
     card.action(player, card, current_gameboard) # all card actions must take this signature
+    # add to game history
+    current_gameboard['history']['function'].append(card.action)
+    params = dict()
+    params['player'] = player
+    params['card'] = card
+    params['current_gameboard'] = current_gameboard
+    current_gameboard['history']['param'].append(params)
+    current_gameboard['history']['return'].append(None)
 
 
 def move_player(player, card, current_gameboard):
@@ -65,6 +88,13 @@ def move_player(player, card, current_gameboard):
     jail_position = current_gameboard['jail_position']
     if new_position == jail_position:
         player.send_to_jail(current_gameboard)
+        # add to game history
+        current_gameboard['history']['function'].append(player.send_to_jail)
+        params = dict()
+        params['self'] = player
+        params['current_gameboard'] = current_gameboard
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
     else:
         _move_player__check_for_go(player, new_position, current_gameboard)
 
@@ -103,8 +133,22 @@ def bank_cash_transaction(player, card, current_gameboard):
     print 'executing bank_cash_transaction for ', player.player_name
     if card.amount < 0:
         player.charge_player(-1*card.amount)
+        # add to game history
+        current_gameboard['history']['function'].append(player.charge_player)
+        params = dict()
+        params['self'] = player
+        params['amount'] = -1*card.amount
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
     elif card.amount > 0:
         player.receive_cash(card.amount)
+        # add to game history
+        current_gameboard['history']['function'].append(player.receive_cash)
+        params = dict()
+        params['self'] = player
+        params['amount'] = card.amount
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
     else:
         print 'Something broke in bank_cash_transaction. That is all I know.'
         raise Exception
@@ -125,14 +169,45 @@ def player_cash_transaction(player, card, current_gameboard):
                 continue
 
             p.receive_cash(-1*card.amount_per_player)
-            p.charge_player(-1*card.amount_per_player)
+            # add to game history
+            current_gameboard['history']['function'].append(p.receive_cash)
+            params = dict()
+            params['self'] = p
+            params['amount'] = -1*card.amount_per_player
+            current_gameboard['history']['param'].append(params)
+            current_gameboard['history']['return'].append(None)
+
+            player.charge_player(-1*card.amount_per_player)
+            # add to game history
+            current_gameboard['history']['function'].append(player.charge_player)
+            params = dict()
+            params['self'] = player
+            params['amount'] = -1*card.amount_per_player
+            current_gameboard['history']['param'].append(params)
+            current_gameboard['history']['return'].append(None)
+
     elif card.amount_per_player > 0:
         for p in current_gameboard['players']:
             if p == player or p.status == 'lost':
                 continue
 
             player.receive_cash(card.amount_per_player)
+            # add to game history
+            current_gameboard['history']['function'].append(player.receive_cash)
+            params = dict()
+            params['self'] = player
+            params['amount'] = card.amount_per_player
+            current_gameboard['history']['param'].append(params)
+            current_gameboard['history']['return'].append(None)
+
             p.charge_player(card.amount_per_player)
+            # add to game history
+            current_gameboard['history']['function'].append(p.charge_player)
+            params = dict()
+            params['self'] = p
+            params['amount'] = card.amount_per_player
+            current_gameboard['history']['param'].append(params)
+            current_gameboard['history']['return'].append(None)
 
 
 def contingent_bank_cash_transaction(player, card, current_gameboard):
@@ -146,6 +221,14 @@ def contingent_bank_cash_transaction(player, card, current_gameboard):
     """
     print 'executing contingent_bank_cash_transaction for ', player.player_name
     card.contingency(player, card, current_gameboard)
+    # add to game history
+    current_gameboard['history']['function'].append(card.contingency)
+    params = dict()
+    params['player'] = player
+    params['card'] = card
+    params['current_gameboard'] = current_gameboard
+    current_gameboard['history']['param'].append(params)
+    current_gameboard['history']['return'].append(None)
 
 
 def calculate_street_repair_cost(player, card, current_gameboard): # assesses, not just calculates
@@ -161,6 +244,13 @@ def calculate_street_repair_cost(player, card, current_gameboard): # assesses, n
     cost_per_hotel = 115
     cost = player.num_total_houses*cost_per_house+player.num_total_hotels*cost_per_hotel
     player.charge_player(cost)
+    # add to game history
+    current_gameboard['history']['function'].append(player.charge_player)
+    params = dict()
+    params['self'] = player
+    params['amount'] = cost
+    current_gameboard['history']['param'].append(params)
+    current_gameboard['history']['return'].append(None)
 
 
 def move_player__check_for_go(player, card, current_gameboard):
@@ -209,11 +299,34 @@ def move_to_nearest_utility__pay_or_buy__check_for_go(player, card, current_game
     if 'bank.Bank' in str(type(current_loc.owned_by)): # we're forced to use this hack to avoid an import.
         print 'utility is owned by bank. Player will have option to purchase.'
         player.process_move_consequences(current_gameboard)
+        # add to game history
+        current_gameboard['history']['function'].append(player.process_move_consequences)
+        params = dict()
+        params['self'] = player
+        params['current_gameboard'] = current_gameboard
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
         return
     else:
         amount_due = current_gameboard['current_die_total']*10
         player.charge_player(amount_due)
-        current_loc.owned_by.receive_cash(amount_due)
+        # add to game history
+        current_gameboard['history']['function'].append(player.charge_player)
+        params = dict()
+        params['self'] = player
+        params['amount'] = amount_due
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
+
+        current_owner = current_loc.owned_by
+        current_owner.receive_cash(amount_due)
+        # add to game history
+        current_gameboard['history']['function'].append(current_owner.receive_cash)
+        params = dict()
+        params['self'] = current_owner
+        params['amount'] = amount_due
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
 
 
 def move_to_nearest_railroad__pay_double_or_buy__check_for_go(player, card, current_gameboard):
@@ -249,11 +362,34 @@ def move_to_nearest_railroad__pay_double_or_buy__check_for_go(player, card, curr
     if 'bank.Bank' in str(type(current_loc.owned_by)):  # we're forced to use this hack to avoid an import.
         print 'railroad is owned by bank. Player will have option to purchase.'
         player.process_move_consequences(current_gameboard)
+        # add to game history
+        current_gameboard['history']['function'].append(player.process_move_consequences)
+        params = dict()
+        params['self'] = player
+        params['current_gameboard'] = current_gameboard
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
         return
     else:
         amount_due = 2 * current_loc.calculate_railroad_dues()
         player.charge_player(amount_due)
-        current_loc.owned_by.receive_cash(amount_due)
+        # add to game history
+        current_gameboard['history']['function'].append(player.charge_player)
+        params = dict()
+        params['self'] = player
+        params['amount'] = amount_due
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
+
+        current_owner = current_loc.owned_by
+        current_owner.receive_cash(amount_due)
+        # add to game history
+        current_gameboard['history']['function'].append(current_owner.receive_cash)
+        params = dict()
+        params['self'] = current_owner
+        params['amount'] = amount_due
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
 
 
 def calculate_general_repair_cost(player, card, current_gameboard):
@@ -269,6 +405,13 @@ def calculate_general_repair_cost(player, card, current_gameboard):
     cost_per_hotel = 100
     cost = player.num_total_houses * cost_per_house + player.num_total_hotels * cost_per_hotel
     player.charge_player(cost)
+    # add to game history
+    current_gameboard['history']['function'].append(player.charge_player)
+    params = dict()
+    params['self'] = player
+    params['amount'] = cost
+    current_gameboard['history']['param'].append(params)
+    current_gameboard['history']['return'].append(None)
 
 
 def move_player_relative(player, card, current_gameboard):
@@ -281,6 +424,15 @@ def move_player_relative(player, card, current_gameboard):
     """
     print 'executing move_player_relative action for ',player.player_name
     move_player_after_die_roll(player, card.new_relative_position, current_gameboard, True)
+    # add to game history
+    current_gameboard['history']['function'].append(move_player_after_die_roll)
+    params = dict()
+    params['player'] = player
+    params['rel_move'] = card.new_relative_position
+    params['current_gameboard'] = current_gameboard
+    params['check_for_go'] = True
+    current_gameboard['history']['param'].append(params)
+    current_gameboard['history']['return'].append(None)
 
 
 def move_player_after_die_roll(player, rel_move, current_gameboard, check_for_go=True):
@@ -308,8 +460,23 @@ def move_player_after_die_roll(player, rel_move, current_gameboard, check_for_go
         if _has_player_passed_go(player.current_position, new_position, go_position):
             print player.player_name,' passes Go.'
             player.receive_cash(go_increment)
+            # add to game history
+            current_gameboard['history']['function'].append(player.receive_cash)
+            params = dict()
+            params['self'] = player
+            params['amount'] = go_increment
+            current_gameboard['history']['param'].append(params)
+            current_gameboard['history']['return'].append(None)
 
     player.update_player_position(new_position, current_gameboard)  # update this only after checking for go
+    # add to game history
+    current_gameboard['history']['function'].append(player.update_player_position)
+    params = dict()
+    params['self'] = player
+    params['new_position'] = new_position
+    params['current_gameboard'] = current_gameboard
+    current_gameboard['history']['param'].append(params)
+    current_gameboard['history']['return'].append(None)
 
 
 """
@@ -367,5 +534,20 @@ def _move_player__check_for_go(player, new_position, current_gameboard):
     go_increment = current_gameboard['go_increment']
     if _has_player_passed_go(player.current_position, new_position, go_position):
         player.receive_cash(go_increment)
+        # add to game history
+        current_gameboard['history']['function'].append(player.receive_cash)
+        params = dict()
+        params['self'] = player
+        params['amount'] = go_increment
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
 
     player.update_player_position(new_position, current_gameboard) # update this only after checking for go
+    # add to game history
+    current_gameboard['history']['function'].append(player.update_player_position)
+    params = dict()
+    params['self'] = player
+    params['new_position'] = new_position
+    params['current_gameboard'] = current_gameboard
+    current_gameboard['history']['param'].append(params)
+    current_gameboard['history']['return'].append(None)

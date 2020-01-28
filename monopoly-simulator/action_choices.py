@@ -77,8 +77,25 @@ def sell_property(player, asset, current_gameboard):
     else:
         print 'Transferring property to bank'
         cash_due = asset.transfer_property_to_bank(player, current_gameboard)
+        # add to game history
+        current_gameboard['history']['function'].append(asset.transfer_property_to_bank)
+        params = dict()
+        params['self'] = asset
+        params['player'] = player
+        params['current_gameboard'] = current_gameboard
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(cash_due)
+
         print 'Transfer successful. Paying player what they are due for the property and returning 1...'
         player.receive_cash(cash_due)
+        # add to game history
+        current_gameboard['history']['function'].append(player.receive_cash)
+        params = dict()
+        params['self'] = player
+        params['amount'] = cash_due
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
+
         return 1 # property has been successfully sold
 
 
@@ -124,6 +141,14 @@ def sell_house_hotel(player, asset, current_gameboard, sell_house=True, sell_hot
             print player.player_name,' now has num_total_hotels ',str(player.num_total_hotels),' and num_total_houses ',str(player.num_total_houses)
             print 'Paying player for sale.'
             player.receive_cash((asset.price_per_house*4)/2) # player only gets half the initial cost back. Recall that you can sell the entire hotel or not at all.
+            # add to game history
+            current_gameboard['history']['function'].append(player.receive_cash)
+            params = dict()
+            params['self'] = player
+            params['amount'] = (asset.price_per_house*4)/2
+            current_gameboard['history']['param'].append(params)
+            current_gameboard['history']['return'].append(None)
+
             print 'Updating houses and hotels on the asset'
             asset.num_houses = 0 # this should already be 0 but just in case
             asset.num_hotels = 0
@@ -152,6 +177,14 @@ def sell_house_hotel(player, asset, current_gameboard, sell_house=True, sell_hot
                 player.num_total_hotels), ' and num_total_houses ', str(player.num_total_houses)
             print 'Paying player for sale.'
             player.receive_cash(asset.price_per_house/2)
+            # add to game history
+            current_gameboard['history']['function'].append(player.receive_cash)
+            params = dict()
+            params['self'] = player
+            params['amount'] = asset.price_per_house/2
+            current_gameboard['history']['param'].append(params)
+            current_gameboard['history']['return'].append(None)
+
             print 'Updating houses and hotels on the asset'
             asset.num_houses -= 1
             print 'Player has successfully sold house. Returning 1'
@@ -183,12 +216,38 @@ def accept_sell_property_offer(player, current_gameboard):
         return -1
     else:
         print 'Initiating property transfer...'
-        player.outstanding_property_offer['asset'].transfer_property_between_players(player.outstanding_property_offer['from_player'],
+        func_asset = player.outstanding_property_offer['asset']
+        func = func_asset.transfer_property_between_players
+        func(player.outstanding_property_offer['from_player'],
                            player, current_gameboard)
+        # add to game history
+        current_gameboard['history']['function'].append(func)
+        params = dict()
+        params['self'] = func_asset
+        params['from_player'] = player.outstanding_property_offer['from_player']
+        params['to_player'] = player
+        params['current_gameboard'] = current_gameboard
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
 
         print 'Initiating cash transfer from one player to another'
         player.charge_player(player.outstanding_property_offer['price'])
+        # add to game history
+        current_gameboard['history']['function'].append(player.charge_player)
+        params = dict()
+        params['self'] = player
+        params['amount'] = player.outstanding_property_offer['price']
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
+
         player.outstanding_property_offer['from_player'].receive_cash(player.outstanding_property_offer['price'])
+        # add to game history
+        current_gameboard['history']['function'].append(player.outstanding_property_offer['from_player'].receive_cash)
+        params = dict()
+        params['self'] = player.outstanding_property_offer['from_player']
+        params['amount'] = player.outstanding_property_offer['price']
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
 
         print 'Transaction successful. Nulling outstanding property offers data structures and returning 1'
         player.is_property_offer_outstanding = False
@@ -218,7 +277,7 @@ def concluded_actions():
     return 1 # does nothing; code is always a success
 
 
-def mortgage_property(player, asset):
+def mortgage_property(player, asset, current_gameboard):
     """
     Action for player to mortgage asset.
     :param player: Player instance. The player wants to mortgage asset
@@ -239,6 +298,14 @@ def mortgage_property(player, asset):
         asset.is_mortgaged = True
         player.mortgaged_assets.add(asset)
         player.receive_cash(asset.mortgage)
+        # add to game history
+        current_gameboard['history']['function'].append(player.receive_cash)
+        params = dict()
+        params['self'] = player
+        params['amount'] = asset.mortgage
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
+
         print "Property has been mortgaged and player has received cash. Returning 1"
         return 1 # property has been successfully mortgaged
 
@@ -287,6 +354,14 @@ def improve_property(player, asset, current_gameboard, add_house=True, add_hotel
             print player.player_name,' now has num_total_hotels ',str(player.num_total_hotels),' and num_total_houses ',str(player.num_total_houses)
             print 'Charging player for improvements.'
             player.charge_player(asset.price_per_house)
+            # add to game history
+            current_gameboard['history']['function'].append(player.charge_player)
+            params = dict()
+            params['self'] = player
+            params['amount'] = asset.price_per_house
+            current_gameboard['history']['param'].append(params)
+            current_gameboard['history']['return'].append(None)
+
             print 'Updating houses and hotels on the asset'
             asset.num_houses = 0
             asset.num_hotels = 1
@@ -317,6 +392,14 @@ def improve_property(player, asset, current_gameboard, add_house=True, add_hotel
                 player.num_total_hotels), ' and num_total_houses ', str(player.num_total_houses)
             print 'Charging player for improvements.'
             player.charge_player(asset.price_per_house)
+            # add to game history
+            current_gameboard['history']['function'].append(player.charge_player)
+            params = dict()
+            params['self'] = player
+            params['amount'] = asset.price_per_house
+            current_gameboard['history']['param'].append(params)
+            current_gameboard['history']['return'].append(None)
+
             print 'Updating houses and hotels on the asset'
             asset.num_houses += 1
             print 'Player has successfully improved property. Returning 1'
@@ -360,7 +443,7 @@ def use_get_out_of_jail_card(player, current_gameboard):
         return -1
 
 
-def pay_jail_fine(player):
+def pay_jail_fine(player, current_gameboard):
     """
     If you don't have enough cash, you'll stay in jail. Otherwise, the fine will be charged and you will be out of jail.
     :param player: Player instance.
@@ -368,6 +451,14 @@ def pay_jail_fine(player):
     """
     if player.current_cash >= 50 and player.currently_in_jail:
         player.charge_player(50)
+        # add to game history
+        current_gameboard['history']['function'].append(player.charge_player)
+        params = dict()
+        params['self'] = player
+        params['amount'] = 50
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
+
         print 'Player has been charged the fine. Setting currently_in_status to False and returning 1'
         player.currently_in_jail = False
         return 1
@@ -401,6 +492,13 @@ def buy_property(player, asset, current_gameboard):
     if asset.owned_by != current_gameboard['bank']:
         print asset.name,' is not owned by Bank! Resetting option_to_buy for player and returning code -1'
         player.reset_option_to_buy()
+        # add to game history
+        current_gameboard['history']['function'].append(player.reset_option_to_buy)
+        params = dict()
+        params['self'] = player
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
+
         return -1
 
     if player.current_cash < asset.price:
@@ -408,15 +506,56 @@ def buy_property(player, asset, current_gameboard):
         index_current_player = current_gameboard['players'].index(player)  # in players, find the index of the current player
         starting_player_index = (index_current_player + 1) % len(current_gameboard['players'])  # the next player's index. this player will start the auction
         player.reset_option_to_buy()
+        # add to game history
+        current_gameboard['history']['function'].append(player.reset_option_to_buy)
+        params = dict()
+        params['self'] = player
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
+
         print asset.name, ' is going up for auction since ', player.player_name, ' does not have enough cash to purchase this property. Conducting auction and returning -1'
         current_gameboard['bank'].auction(starting_player_index, current_gameboard, asset)
+        # add to game history
+        current_gameboard['history']['function'].append(current_gameboard['bank'].auction)
+        params = dict()
+        params['self'] = current_gameboard['bank']
+        params['starting_player_index'] = starting_player_index
+        params['current_gameboard'] = current_gameboard
+        params['asset'] = asset
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
+
         return -1 # this is a -1 even though you may still succeed in buying the property at auction
     else:
         print 'Charging ',player.player_name, ' amount ',str(asset.price),' for asset ',asset.name
         player.charge_player(asset.price)
+        # add to game history
+        current_gameboard['history']['function'].append(player.charge_player)
+        params = dict()
+        params['self'] = player
+        params['amount'] = asset.price
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
+
         asset.update_asset_owner(player, current_gameboard)
+        # add to game history
+        current_gameboard['history']['function'].append(asset.update_asset_owner)
+        params = dict()
+        params['self'] = asset
+        params['player'] = player
+        params['current_gameboard'] = current_gameboard
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
+
         print asset.name, ' ownership has been updated! Resetting option_to_buy for player and returning code 1'
         player.reset_option_to_buy()
+        # add to game history
+        current_gameboard['history']['function'].append(player.reset_option_to_buy)
+        params = dict()
+        params['self'] = player
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
+
         return 1
 
 

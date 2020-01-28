@@ -90,6 +90,14 @@ class Player(object):
         self.status = 'lost'
         self.current_cash = 0
         self.discharge_assets_to_bank(current_gameboard)
+        # add to game history
+        current_gameboard['history']['function'].append(self.discharge_assets_to_bank)
+        params = dict()
+        params['self'] = self
+        params['current_gameboard'] = current_gameboard
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
+
         self.currently_in_jail = False
         self.outstanding_property_offer['from_player'] = None
         self.outstanding_property_offer['asset'] = None
@@ -283,10 +291,26 @@ class Player(object):
             else:
                 print current_location.name, ' is owned by ',current_location.owned_by.player_name,' and is not mortgaged. Proceeding to calculate and pay rent.'
                 self.calculate_and_pay_rent_dues(current_gameboard)
+                # add to game history
+                current_gameboard['history']['function'].append(self.calculate_and_pay_rent_dues)
+                params = dict()
+                params['self'] = self
+                params['current_gameboard'] = current_gameboard
+                current_gameboard['history']['param'].append(params)
+                current_gameboard['history']['return'].append(None)
+
                 return
         elif current_location.loc_class == 'tax':
             print self.player_name, ' is on a tax location, namely ', current_location.name, '. Deducting tax...'
             self.charge_player(current_location.amount_due)
+            # add to game history
+            current_gameboard['history']['function'].append(self.charge_player)
+            params = dict()
+            params['self'] = self
+            params['amount'] = current_location.amount_due
+            current_gameboard['history']['param'].append(params)
+            current_gameboard['history']['return'].append(None)
+
             return
         elif current_location.loc_class == 'railroad':
             print self.player_name, ' is on a railroad location, namely ', current_location.name
@@ -303,9 +327,32 @@ class Player(object):
             else:
                 print current_location.name, ' is owned by ', current_location.owned_by.player_name, ' and is not mortgaged. Proceeding to calculate and pay dues.'
                 dues = current_location.calculate_railroad_dues()
+                # add to game history
+                current_gameboard['history']['function'].append(current_location.calculate_railroad_dues)
+                params = dict()
+                params['self'] = current_location
+                current_gameboard['history']['param'].append(params)
+                current_gameboard['history']['return'].append(dues)
+
                 recipient = current_location.owned_by
                 recipient.receive_cash(dues)
+                # add to game history
+                current_gameboard['history']['function'].append(recipient.receive_cash)
+                params = dict()
+                params['self'] = recipient
+                params['amount'] = dues
+                current_gameboard['history']['param'].append(params)
+                current_gameboard['history']['return'].append(None)
+
                 self.charge_player(dues)
+                # add to game history
+                current_gameboard['history']['function'].append(self.charge_player)
+                params = dict()
+                params['self'] = self
+                params['amount'] = dues
+                current_gameboard['history']['param'].append(params)
+                current_gameboard['history']['return'].append(None)
+
                 return
         elif current_location.loc_class == 'utility':
             print self.player_name, ' is on a utility location, namely ', current_location.name
@@ -322,13 +369,45 @@ class Player(object):
             else:
                 print current_location.name, ' is owned by ', current_location.owned_by.player_name, ' and is not mortgaged. Proceeding to calculate and pay dues.'
                 dues = current_location.calculate_utility_dues(current_gameboard['current_die_total'])
+                # add to game history
+                current_gameboard['history']['function'].append(current_location.calculate_utility_dues)
+                params = dict()
+                params['self'] = current_location
+                params['die_total'] = current_gameboard['current_die_total']
+                current_gameboard['history']['param'].append(params)
+                current_gameboard['history']['return'].append(dues)
+
                 recipient = current_location.owned_by
                 recipient.receive_cash(dues)
+                # add to game history
+                current_gameboard['history']['function'].append(recipient.receive_cash)
+                params = dict()
+                params['self'] = recipient
+                params['amount'] = dues
+                current_gameboard['history']['param'].append(params)
+                current_gameboard['history']['return'].append(None)
+
                 self.charge_player(dues)
+                # add to game history
+                current_gameboard['history']['function'].append(self.charge_player)
+                params = dict()
+                params['self'] = self
+                params['amount'] = dues
+                current_gameboard['history']['param'].append(params)
+                current_gameboard['history']['return'].append(None)
+
                 return
         elif current_location.loc_class == 'action':
             print self.player_name, ' is on an action location, namely ', current_location.name, '. Performing action...'
             current_location.perform_action(self, current_gameboard)
+            # add to game history
+            current_gameboard['history']['function'].append(current_location.perform_action)
+            params = dict()
+            params['player'] = self
+            params['current_gameboard'] = current_gameboard
+            current_gameboard['history']['param'].append(params)
+            current_gameboard['history']['return'].append(None)
+
             return
         else:
             print self.player_name,' is on an unidentified location type. Raising exception.'
@@ -365,9 +444,31 @@ class Player(object):
         current_loc = current_gameboard['location_sequence'][self.current_position]
         print 'calculating and paying rent dues for ', self.player_name, ' who is in property ',current_loc.name,' which is owned by ',current_loc.owned_by.player_name
         rent = current_loc.calculate_rent()
+        # add to game history
+        current_gameboard['history']['function'].append(current_loc.calculate_rent)
+        params = dict()
+        params['self'] = current_loc
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(rent)
+
         recipient = current_loc.owned_by
         recipient.receive_cash(rent)
+        # add to game history
+        current_gameboard['history']['function'].append(recipient.receive_cash)
+        params = dict()
+        params['self'] = recipient
+        params['amount'] = rent
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
+
         self.charge_player(rent)
+        # add to game history
+        current_gameboard['history']['function'].append(self.charge_player)
+        params = dict()
+        params['self'] = self
+        params['amount'] = rent
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
 
     def receive_cash(self, amount):
         """
@@ -522,9 +623,19 @@ class Player(object):
         allowable_actions.add(skip_turn)
         code = 0
         action_to_execute, parameters = self.make_pre_roll_move(self, current_gameboard, allowable_actions, code)
+        t = (action_to_execute, parameters)
+        # add to game history
+        current_gameboard['history']['function'].append(self.make_pre_roll_move)
+        params = dict()
+        params['player'] = self
+        params['current_gameboard'] = current_gameboard
+        params['allowable_moves'] = allowable_actions
+        params['code'] = code
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(t)
 
         if action_to_execute == skip_turn:
-            return self._execute_action(action_to_execute, parameters)
+            return self._execute_action(action_to_execute, parameters, current_gameboard)
 
 
         allowable_actions.add(concluded_actions)
@@ -532,11 +643,22 @@ class Player(object):
 
         while True:  # currently, we set no limits on this; the assumption is that eventually the player will 'pass the baton'
             if action_to_execute == concluded_actions: # short of raising an exception, this is the only way to exit this function
-                return self._execute_action(action_to_execute, parameters)
+                return self._execute_action(action_to_execute, parameters, current_gameboard)
             else:
-                code = self._execute_action(action_to_execute, parameters)
+                code = self._execute_action(action_to_execute, parameters, current_gameboard)
                 print 'Received code ', str(code), '. Continuing iteration...'
-                action_to_execute, parameters = self.make_pre_roll_move(self, current_gameboard, self.compute_allowable_pre_roll_actions(current_gameboard), code)
+                allowable_actions = self.compute_allowable_pre_roll_actions(current_gameboard)
+                action_to_execute, parameters = self.make_pre_roll_move(self, current_gameboard, allowable_actions, code)
+                t = (action_to_execute, parameters)
+                # add to game history
+                current_gameboard['history']['function'].append(self.make_pre_roll_move)
+                params = dict()
+                params['player'] = self
+                params['current_gameboard'] = current_gameboard
+                params['allowable_moves'] = allowable_actions
+                params['code'] = code
+                current_gameboard['history']['param'].append(params)
+                current_gameboard['history']['return'].append(t)
 
     def make_out_of_turn_moves(self, current_gameboard):
         """
@@ -553,22 +675,41 @@ class Player(object):
         allowable_actions.add(skip_turn)
         code = 0
         action_to_execute, parameters = self.make_out_of_turn_move(self, current_gameboard, allowable_actions, code)
+        t = (action_to_execute, parameters)
+        # add to game history
+        current_gameboard['history']['function'].append(self.make_out_of_turn_move)
+        params = dict()
+        params['player'] = self
+        params['current_gameboard'] = current_gameboard
+        params['allowable_moves'] = allowable_actions
+        params['code'] = code
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(t)
 
         if action_to_execute == skip_turn:
-            return self._execute_action(action_to_execute, parameters)
+            return self._execute_action(action_to_execute, parameters, current_gameboard)
 
         allowable_actions.add(concluded_actions)
         allowable_actions.remove(skip_turn)  # from this time on, skip turn is not allowed.
 
         while True:  # currently, we set no limits on this; the assumption is that eventually the player will 'pass the baton'
             if action_to_execute == concluded_actions:  # short of raising an exception, this is the only way to exit this function
-                return self._execute_action(action_to_execute, parameters)
+                return self._execute_action(action_to_execute, parameters, current_gameboard)
             else:
-                code = self._execute_action(action_to_execute, parameters)
+                code = self._execute_action(action_to_execute, parameters, current_gameboard)
                 print 'Received code ', str(code), '. Continuing iteration...'
-                action_to_execute, parameters = self.make_out_of_turn_move(self, current_gameboard,
-                                                                        self.compute_allowable_out_of_turn_actions(
-                                                                            current_gameboard), code)
+                allowable_actions = self.compute_allowable_out_of_turn_actions(current_gameboard)
+                action_to_execute, parameters = self.make_out_of_turn_move(self, current_gameboard, allowable_actions, code)
+                t = (action_to_execute, parameters)
+                # add to game history
+                current_gameboard['history']['function'].append(self.make_out_of_turn_move)
+                params = dict()
+                params['player'] = self
+                params['current_gameboard'] = current_gameboard
+                params['allowable_moves'] = allowable_actions
+                params['code'] = code
+                current_gameboard['history']['param'].append(params)
+                current_gameboard['history']['return'].append(t)
 
 
     def make_post_roll_moves(self, current_gameboard):
@@ -589,22 +730,41 @@ class Player(object):
         allowable_actions = self.compute_allowable_post_roll_actions(current_gameboard)
         code = 0
         action_to_execute, parameters = self.make_post_roll_move(self, current_gameboard, allowable_actions, code)
+        t = (action_to_execute, parameters)
+        # add to game history
+        current_gameboard['history']['function'].append(self.make_post_roll_move)
+        params = dict()
+        params['player'] = self
+        params['current_gameboard'] = current_gameboard
+        params['allowable_moves'] = allowable_actions
+        params['code'] = code
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(t)
 
         if action_to_execute == concluded_actions:
             self._force_buy_outcome(current_gameboard) # if option to buy is not set, this will make no difference.
-            return self._execute_action(action_to_execute, parameters) # now we can conclude actions
+            return self._execute_action(action_to_execute, parameters, current_gameboard) # now we can conclude actions
 
         while True:
             if action_to_execute == concluded_actions: # this is the only way to exit this function
                 self._force_buy_outcome(current_gameboard)
-                return self._execute_action(action_to_execute, parameters)  # now we can conclude actions
+                return self._execute_action(action_to_execute, parameters, current_gameboard)  # now we can conclude actions
 
             else:
-                code = self._execute_action(action_to_execute, parameters)
+                code = self._execute_action(action_to_execute, parameters, current_gameboard)
                 print 'Received code ', str(code), '. Continuing iteration...'
-                action_to_execute, parameters = self.make_post_roll_move(self, current_gameboard,
-                                                                        self.compute_allowable_post_roll_actions(
-                                                                            current_gameboard), code)
+                allowable_actions = self.compute_allowable_post_roll_actions(current_gameboard)
+                action_to_execute, parameters = self.make_post_roll_move(self, current_gameboard, allowable_actions, code)
+                t = (action_to_execute, parameters)
+                # add to game history
+                current_gameboard['history']['function'].append(self.make_post_roll_move)
+                params = dict()
+                params['player'] = self
+                params['current_gameboard'] = current_gameboard
+                params['allowable_moves'] = allowable_actions
+                params['code'] = code
+                current_gameboard['history']['param'].append(params)
+                current_gameboard['history']['return'].append(t)
                 # print action_to_execute
 
 
@@ -622,6 +782,13 @@ class Player(object):
             self._own_or_auction(current_gameboard, current_gameboard['location_sequence'][self.current_position])
 
         self.reset_option_to_buy()
+        # add to game history
+        current_gameboard['history']['function'].append(self.reset_option_to_buy)
+        params = dict()
+        params['self'] = self
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
+
         return
 
     def _own_or_auction(self, current_gameboard, asset):
@@ -635,9 +802,27 @@ class Player(object):
         print 'Executing _own_or_auction for ',self.player_name
 
         dec = self.make_buy_property_decision(self, current_gameboard, asset) # your agent has to make a decision here
+        # add to game history
+        current_gameboard['history']['function'].append(self.make_buy_property_decision)
+        params = dict()
+        params['asset'] = asset
+        params['player'] = self
+        params['current_gameboard'] = current_gameboard
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(dec)
+
         print self.player_name,' decides to purchase? ',str(dec)
         if dec is True:
             asset.update_asset_owner(self, current_gameboard)
+            # add to game history
+            current_gameboard['history']['function'].append(asset.update_asset_owner)
+            params = dict()
+            params['self'] = asset
+            params['player'] = self
+            params['current_gameboard'] = current_gameboard
+            current_gameboard['history']['param'].append(params)
+            current_gameboard['history']['return'].append(None)
+
             return
         else:
             print 'Since ',self.player_name,' decided not to purchase, we are invoking auction proceedings for asset ',asset.name
@@ -646,9 +831,19 @@ class Player(object):
             # the auction function will automatically check whether the player is still active or not etc. We don't need to
             # worry about conducting a valid auction in this function.
             current_gameboard['bank'].auction(starting_player_index, current_gameboard, asset)
+            # add to game history
+            current_gameboard['history']['function'].append(current_gameboard['bank'].auction)
+            params = dict()
+            params['self'] = current_gameboard['bank']
+            params['starting_player_index'] = starting_player_index
+            params['current_gameboard'] = current_gameboard
+            params['asset'] = asset
+            current_gameboard['history']['param'].append(params)
+            current_gameboard['history']['return'].append(None)
+
             return
 
-    def _execute_action(self, action_to_execute, parameters):
+    def _execute_action(self, action_to_execute, parameters, current_gameboard):
         """
         if the action successfully executes, a code of 1 will be returned. If it cannot execute, it will return code -1.
         The most obvious reason this might happens is because you chose an action that is not an allowable action in your
@@ -662,9 +857,24 @@ class Player(object):
         """
         print 'Executing _execute_action for ', self.player_name
         if parameters:
-            return action_to_execute(**parameters)
+            p = action_to_execute(**parameters)
+            # add to game history
+            current_gameboard['history']['function'].append(action_to_execute)
+            params = parameters.copy()
+            current_gameboard['history']['param'].append(params)
+            current_gameboard['history']['return'].append(p)
+
+            return p
         else:
-            return action_to_execute()
+            p = action_to_execute()
+            # add to game history
+            current_gameboard['history']['function'].append(action_to_execute)
+            params = dict()
+            current_gameboard['history']['param'].append(params)
+            current_gameboard['history']['return'].append(p)
+
+            return p
+
 
 
 

@@ -94,4 +94,34 @@ post-roll phase.
 
 REMINDERS:
 
---it is possible to sell a mortgaged property
+--it IS possible to sell a mortgaged property
+
+UPDATES:
+
+January 27, 2020:
+
+--We've added a 'history' facility (a dict) to the game_elements data structure (also called current_gameboard in much of the
+game). There are three lists inside 'history', all of equal length, keyed respectively by 'function', 'param' and 'return'.
+Each time a function is called (starting from within gameplay/simulate_game_instance), we append the function to 'function',
+the parameters passed inside the function to 'param' and the return value to 'return'. We always make this update after
+the function returns (if the function does not return anything, then we simply append None). 'function' is a list of
+function pointers, and 'return' can be heterogeneous, depending on what a function is returning. 'param' is a list of
+dicts, with the keys in the dicts corresponding to exactly the expected arguments in the function (including 'self') and
+the values shallow copies of the corresponding arguments passed to the function. Note that if a function takes on no values,
+we still append an empty dictionary to param to maintain equal length of all three lists. Furthermore, functions that
+are internal (starting with _ or __) are not recorded. Anything called before simulate_game_instance (particularly, the
+initialization of the game board itself) is not recorded either. Finally, diagnostics functions are not recorded since
+they are 'extra-game' conceptually; they should only be used by a developer for stress-testing agents/games and not
+by agents themselves.
+
+--Note that since the parameters can be objects, and we do not do a deep copy of objects when we insert them into
+a param dict, the state of objects can (and in many cases, will) change between the time an object is inserted as
+a parameter or return value into a list, and the time when it is queried by an external agent. With this caveat in mind,
+ there are many core values in each object that stay constant over the tenure of the game e.g., a player's name,
+ an asset's name, card details etc. Dereference with caution.
+
+ --Because of the history facility, we had to modify the signatures of action_choices/mortgage_property & pay_jail_fine slightly
+ (we added current_gameboard to the argument list of both functions). This was necessary since each of these functions
+ itself calls a function, and in order to accurately update history, needs access to the gameboard. If you have already
+ implemented a decision agent that expects the old signature (without current_gameboard) you may want to update; it should
+ be a very small change.

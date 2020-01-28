@@ -39,6 +39,10 @@ def initialize_board(game_schema, player_decision_agents):
     _initialize_players(game_elements, game_schema, player_decision_agents)
     print 'Successfully instantiated and initialized players and decision agents'
 
+    # Step 5: set history data structures
+    _initialize_game_history_structs(game_elements)
+    print 'Successfully instantiated game history data structures'
+
     return game_elements
 
 
@@ -315,3 +319,10 @@ def _initialize_players(game_elements, game_schema, player_decision_agents):
         players.append(Player(**player_args))
 
     game_elements['players'] = players
+
+
+def _initialize_game_history_structs(game_elements):
+    game_elements['history'] = dict()
+    game_elements['history']['function'] = list()
+    game_elements['history']['param'] = list()
+    game_elements['history']['return'] = list()

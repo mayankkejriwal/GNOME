@@ -49,6 +49,16 @@ class Bank(object):
             proposed_bid = bidding_player.make_bid(bidding_player, current_gameboard,
                                 asset, current_bid) # make_bid automatically passes in the player as the first argument
                                                     # since it is a non-static function assignment
+            # add to game history
+            current_gameboard['history']['function'].append(bidding_player.make_bid)
+            params = dict()
+            params['player'] = bidding_player
+            params['current_gameboard'] = current_gameboard
+            params['asset'] = asset
+            params['current_bid'] = current_bid
+            current_gameboard['history']['param'].append(params)
+            current_gameboard['history']['return'].append(proposed_bid)
+
             print bidding_player.player_name,' proposed bid ',str(proposed_bid)
 
             if proposed_bid == 0:
@@ -70,7 +80,23 @@ class Bank(object):
 
         if winning_player:
             winning_player.charge_player(current_bid) # if it got here then current_bid is non-zero.
+            # add to game history
+            current_gameboard['history']['function'].append(winning_player.charge_player)
+            params = dict()
+            params['self'] = winning_player
+            params['amount'] = current_bid
+            current_gameboard['history']['param'].append(params)
+            current_gameboard['history']['return'].append(None)
+
             asset.update_asset_owner(winning_player, current_gameboard)
+            # add to game history
+            current_gameboard['history']['function'].append(asset.update_asset_owner)
+            params = dict()
+            params['self'] = asset
+            params['player'] = winning_player
+            params['current_gameboard'] = current_gameboard
+            current_gameboard['history']['param'].append(params)
+            current_gameboard['history']['return'].append(None)
         else:
             print 'Auction did not succeed in a sale.'
         return

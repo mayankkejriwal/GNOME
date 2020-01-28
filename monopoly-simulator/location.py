@@ -32,6 +32,14 @@ class Location(object):
         :return: An integer. Specifies the amount due to the player for selling this property to the bank
         """
         player.remove_asset(self)
+        # add to game history
+        current_gameboard['history']['function'].append(player.remove_asset)
+        params = dict()
+        params['self'] = player
+        params['asset'] = self
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
+
         self.owned_by = current_gameboard['bank']
         cash_due = self.price / 2
         cash_owed = 0
@@ -55,7 +63,23 @@ class Location(object):
         :return: None
         """
         from_player.remove_asset(self)
+        # add to game history
+        current_gameboard['history']['function'].append(from_player.remove_asset)
+        params = dict()
+        params['self'] = from_player
+        params['asset'] = self
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
+
         self.update_asset_owner(to_player, current_gameboard)
+        # add to game history
+        current_gameboard['history']['function'].append(self.update_asset_owner)
+        params = dict()
+        params['self'] = self
+        params['player'] = to_player
+        params['current_gameboard'] = current_gameboard
+        current_gameboard['history']['param'].append(params)
+        current_gameboard['history']['return'].append(None)
 
     def update_asset_owner(self, player, current_gameboard):
         """
@@ -76,10 +100,27 @@ class Location(object):
             elif type(self.owned_by) != Bank: # not owned by this player or by the bank.
                 print 'Asset is owned by ',self.owned_by.player_name,'. Attempting to remove...'
                 self.owned_by.remove_asset(self)
+                # add to game history
+                current_gameboard['history']['function'].append(self.owned_by.remove_asset)
+                params = dict()
+                params['self'] = self.owned_by
+                params['asset'] = self
+                current_gameboard['history']['param'].append(params)
+                current_gameboard['history']['return'].append(None)
+
                 self.owned_by = current_gameboard['bank'] # this is temporary, but we want to enforce safe behavior
 
             self.owned_by = player
             player.add_asset(self, current_gameboard) # if the property is mortgaged, this will get reflected in the new owner's portfolio
+            # add to game history
+            current_gameboard['history']['function'].append(player.add_asset)
+            params = dict()
+            params['self'] = player
+            params['asset'] = self
+            params['current_gameboard'] = current_gameboard
+            current_gameboard['history']['param'].append(params)
+            current_gameboard['history']['return'].append(None)
+
             print 'Asset ownership update succeeded.'
         else:
             print 'Asset ',self.name,' is non-purchaseable!'
@@ -255,6 +296,7 @@ class RailroadLocation(Location):
 
             raise Exception
         dues = self._railroad_dues[self.owned_by.num_railroads_possessed]
+
         print 'railroad dues are ',str(dues)
         return dues
 
