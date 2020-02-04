@@ -31,7 +31,8 @@ _agent_memory = None # for the agent's internal use only
 
 def make_pre_roll_move(player, current_gameboard, allowable_moves, code):
     """
-
+    Many actions are possible in pre_roll but we prefer to save the logic for out_of_turn. The only decision
+    we'll make here is whether we want to leave jail (if we're in jail).
     :param player: A Player instance. You should expect this to be the player that is 'making' the decision (i.e. the player
     instantiated with the functions specified by this decision agent).
     :param current_gameboard: A dict. The global data structure representing the current game board.
@@ -44,13 +45,14 @@ def make_pre_roll_move(player, current_gameboard, allowable_moves, code):
     The dictionary must exactly contain the keys and expected value types expected by that action in
     action_choices
     """
-    if action_choices.use_get_out_of_jail_card in allowable_moves:
+    if player.current_cash >= current_gameboard['go_increment']: # if we don't have enough money, best to stay put.
         param = dict()
         param['player'] = player
         param['current_gameboard'] = current_gameboard
-        return (action_choices.use_get_out_of_jail_card, param)
-    elif True:
-        pass
+        if action_choices.use_get_out_of_jail_card in allowable_moves:
+            return (action_choices.use_get_out_of_jail_card, param)
+        elif action_choices.pay_jail_fine in allowable_moves:
+            return (action_choices.pay_jail_fine, param)
 
     # if we ran the gamut, and did not return, then it's time to skip turn or conclude actions
     if action_choices.skip_turn in allowable_moves:
@@ -77,8 +79,56 @@ def make_out_of_turn_move(player, current_gameboard, allowable_moves, code):
     The dictionary must exactly contain the keys and expected value types expected by that action in
     action_choices
     """
+    if action_choices.accept_sell_property_offer in allowable_moves:
+        param = dict()
+        param['player'] = player
+        param['current_gameboard'] = current_gameboard
+        # we accept an offer under one of two conditions:
+        if player.outstanding_property_offer['asset'].is_mortgaged or player.outstanding_property_offer['price']>player.current_cash:
+            pass # ignore the offer if the property is mortgaged or will result in insolvency. This pass doesn't require 'filling' in.
+        elif player.current_cash-player.outstanding_property_offer['price'] >= current_gameboard['go_increment'] and \
+            player.outstanding_property_offer['price']<=player.outstanding_property_offer['asset'].price:
+            # 1. we can afford it, and it's at or below market rate so let's buy it
+
+            return (action_choices.accept_sell_property_offer, param)
+        elif agent_helper_functions.will_property_complete_set(player, player.outstanding_property_offer['asset'],current_gameboard):
+            # 2. less affordable, but we stand to gain by monopoly
+            if player.current_cash - player.outstanding_property_offer['price'] >= current_gameboard['go_increment']/2: # risky, but worth it
+                return (action_choices.accept_sell_property_offer, param)
+
+    if player.status != 'current_move': # these actions are considered only if it's NOT our turn to roll the dice.
+        if action_choices.improve_property in allowable_moves: # beef up full color sets to maximize rent potential.
+            param = agent_helper_functions.identify_improvement_opportunity(player, current_gameboard)
+            if param:
+                return (action_choices.improve_property, param)
+
+        for m in player.mortgaged_assets:
+            if player.current_cash-(m.mortgage*1.1) >= current_gameboard['go_increment'] and action_choices.free_mortgage in allowable_moves:
+                # free mortgages till we can afford it. the second condition should not be necessary but just in case.
+                param = dict()
+                param['player'] = player
+                param['current_gameboard'] = current_gameboard
+                param['asset'] = m
+                return (action_choices.free_mortgage, param)
+
+
+    else: # it is our current move. We should raise money if necessary, especially if we're low on cash.
+        if player.current_cash < current_gameboard['go_increment'] and \
+            action_choices.make_sell_property_offer in allowable_moves: # let's try to see if we can sell property to other players at a premium
+            # the current agent does not try to raise money any other way. The reason is that selling houses, hotels, properties
+            # or mortgaging properties are all available to us both in post-roll and also in handle_negative_cash_balance. A more proactive
+            # agent (which isn't us) may want to make sure cash reserves are high before rolling the dice. Similarly, a more opportunistic
+            # agent may choose to make a sell offer even if cash reserves aren't too low.
+                param = agent_helper_functions.identify_sale_opportunity_to_player(player, current_gameboard)
+                if param:
+                    return (action_choices.make_sell_property_offer, param)
+
+
+    # if we ran the gamut, and did not return, then it's time to skip turn or conclude actions
     if action_choices.skip_turn in allowable_moves:
         return (action_choices.skip_turn, dict())
+    elif action_choices.concluded_actions in allowable_moves:
+        return (action_choices.concluded_actions, dict())
     else:
         raise Exception
 
@@ -198,8 +248,12 @@ def make_bid(player, current_gameboard, asset, current_bid):
         else:   # We are aware that this can be simplified with a simple return 0 statement at the end. However in the final baseline agent
                 # the return 0's would be replaced with more sophisticated rules. Think of them as placeholders.
             return 0 # this will lead to a rejection of the bid downstream automatically
+    elif current_bid < player.current_cash and agent_helper_functions.will_property_complete_set(player,asset,current_gameboard):
+            # We are prepared to bid more than the price of the asset only if it doesn't result in insolvency, and
+                # if we can get a monopoly this way
+        return current_bid+(player.current_cash-current_bid)/4
     else:
-        return 0 # this agent never bids more than the price of the asset
+        return 0 # no reason to bid
 
 
 
@@ -210,10 +264,11 @@ def handle_negative_cash_balance(player, current_gameboard):
     this issue before we move to the next player's pre-roll. If you do not succeed in restoring your cash balance to
     0 or positive, bankruptcy proceeds will begin and you will lost the game.
 
-    The dummy agent in this case just decides to go bankrupt by returning -1. A more sophisticated agent would try to
-    do things like selling houses and hotels, properties etc. You must invoke all of these functions yourself since
-    we want to give you maximum flexibility when you are in this situation. Once done, return 1 if you believe you
-    succeeded (see the :return description for a caveat on this)
+    The background agent tries a number of things to get itself out of a financial hole. First, it checks whether
+    mortgaging alone can save it. If not, then it begins selling unimproved properties in ascending order of price, the idea being
+    that it might as well get rid of cheap properties. This may not be the most optimal move but it is reasonable.
+    If it ends up selling all unimproved properties and is still insolvent, it starts selling improvements, followed
+    by a sale of the (now) unimproved properties.
 
     :param player: A Player instance. You should expect this to be the player that is 'making' the decision (i.e. the player
     instantiated with the functions specified by this decision agent).
@@ -222,7 +277,61 @@ def handle_negative_cash_balance(player, current_gameboard):
     Note that even if you do return 1, we will check to see whether you have non-negative cash balance. The rule of thumb
     is to return 1 as long as you 'try', or -1 if you don't try (in which case you will be declared bankrupt and lose the game)
     """
-    return -1
+    mortgage_potentials = list()
+    max_sum = 0
+    for a in player.assets:
+        if a.is_mortgaged:
+            continue
+        elif a.loc_class=='real_estate' and (a.num_houses>0 or a.num_hotels>0):
+            continue
+        else:
+            mortgage_potentials.append((a,a.mortgage))
+            max_sum += a.mortgage
+    if mortgage_potentials and max_sum+player.current_cash >= 0: # if the second condition is not met, no point in mortgaging
+        sorted_potentials = sorted(mortgage_potentials, key=lambda x: x[1])  # sort by mortgage in ascending order
+        for p in sorted_potentials:
+            action_choices.mortgage_property(player, p[0], current_gameboard)
+            if player.current_cash >= 0:
+                return 1 # we're done
+
+    # if we got here, it means we're still in trouble. Next move is to sell unimproved properties. We don't check if
+    # the total will cover our debts, since we're desperate at this point.
+    sale_potentials = list()
+    for a in player.assets:
+        if a.is_mortgaged:
+            sale_potentials.append((a, (a.price/2)-(1.1*a.mortgage)))
+        elif a.loc_class=='real_estate' and (a.num_houses>0 or a.num_hotels>0):
+            continue
+        else:
+            sale_potentials.append((a,a.price/2))
+
+    if sale_potentials: # if the second condition is not met, no point in mortgaging
+        sorted_potentials = sorted(sale_potentials, key=lambda x: x[1])  # sort by mortgage in ascending order
+        for p in sorted_potentials:
+            action_choices.sell_property(player, p[0], current_gameboard)
+            if player.current_cash >= 0:
+                return 1 # we're done
+
+    # if we're STILL not done, then the only option is to start selling houses and hotels, if we have 'em
+    while player.num_total_houses > 0 or player.num_total_hotels > 0: # often times, a sale may not succeed due to uniformity requirements. We keep trying till everything is sold,
+        # or cash balance turns non-negative.
+        for a in player.assets:
+            if a.num_houses > 0:
+                action_choices.sell_house_hotel(player, a, current_gameboard,True, False)
+                if player.current_cash >= 0:
+                    return 1 # we're done
+            elif a.num_hotels > 0:
+                action_choices.sell_house_hotel(player, a, current_gameboard, False, True)
+                if player.current_cash >= 0:
+                    return 1  # we're done
+
+    # final straw
+    for a in player.assets:
+        action_choices.sell_property(player, a, current_gameboard) # this could be refined further; we may be able to get away with a mortgage at this point.
+        if player.current_cash >= 0:
+            return 1  # we're done
+
+    return 1 # if we didn't succeed in establishing solvency, it will get caught by the simulator. Since we tried, we return 1.
 
 
 def _build_decision_agent_methods_dict():
