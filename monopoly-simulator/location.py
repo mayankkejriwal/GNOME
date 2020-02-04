@@ -50,7 +50,10 @@ class Location(object):
             self.is_mortgaged = False
             cash_owed = 1.1 * self.mortgage
 
-        return cash_due - cash_owed
+        if cash_due >= cash_owed:
+            return cash_due - cash_owed
+        else:
+            return 0 # foreclosure.
 
 
     def transfer_property_between_players(self, from_player, to_player, current_gameboard):
@@ -62,14 +65,14 @@ class Location(object):
         :param current_gameboard: A dict. The global gameboard data structure
         :return: None
         """
-        from_player.remove_asset(self)
-        # add to game history
-        current_gameboard['history']['function'].append(from_player.remove_asset)
-        params = dict()
-        params['self'] = from_player
-        params['asset'] = self
-        current_gameboard['history']['param'].append(params)
-        current_gameboard['history']['return'].append(None)
+        # from_player.remove_asset(self)
+        # # add to game history
+        # current_gameboard['history']['function'].append(from_player.remove_asset)
+        # params = dict()
+        # params['self'] = from_player
+        # params['asset'] = self
+        # current_gameboard['history']['param'].append(params)
+        # current_gameboard['history']['return'].append(None)
 
         self.update_asset_owner(to_player, current_gameboard)
         # add to game history

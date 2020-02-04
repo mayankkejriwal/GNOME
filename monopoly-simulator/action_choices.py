@@ -70,7 +70,7 @@ def sell_property(player, asset, current_gameboard):
         print player.player_name,' does not own this property and cannot sell it. Returning -1'
         return -1
 
-    elif asset.num_houses > 0 or asset.num_hotels > 0 :
+    elif asset.loc_class == 'real_estate' and (asset.num_houses > 0 or asset.num_hotels > 0) :
         print asset.name,' has improvements. Clear them before trying to sell! Returning -1'
         return -1
 
@@ -322,13 +322,20 @@ def improve_property(player, asset, current_gameboard, add_house=True, add_hotel
     :param add_hotel: A Boolean. True if you want to add a hotel to asset.
     :return: 1 if player has successfully managed to improve property or -1 otherwise.
     """
-    if asset.owned_by != player or asset.is_mortgaged or asset.color not in player.full_color_sets_possessed or \
-        player.current_cash < asset.price_per_house:
+    if asset.owned_by != player or asset.is_mortgaged:
         # these are the usual conditions that we verify before allowing any improvement to proceed
-        print player.player_name,' is not permitted to/cannot afford to improve this property. Returning -1'
+        print player.player_name,' does not own this property, or it is mortgaged. Returning -1'
         return -1
     elif asset.loc_class != 'real_estate':
         print asset.name,' is not real estate and cannot be improved. Returning -1'
+        return -1
+    elif (asset.color not in player.full_color_sets_possessed):
+
+        # these are the usual conditions that we verify before allowing any improvement to proceed
+        print player.player_name,' does not own all properties of this color, hence it cannot be improved. Returning -1'
+        return -1
+    elif player.current_cash <= asset.price_per_house:
+        print player.player_name, ' cannot afford this improvement. Returning -1'
         return -1
 
     if add_hotel: # this is the simpler case

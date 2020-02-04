@@ -111,7 +111,7 @@ def is_property_lone(player, asset):
             if c_asset == asset:
                 continue
             else:
-                if c_asset.color and c_asset.color == c: # player has another property with this color
+                if c_asset.loc_class == 'real_estate' and c_asset.color == c: # player has another property with this color
                     return False
         return True # if we got here, then only this asset (of its color class) is possessed by player.
 
@@ -129,7 +129,7 @@ def identify_improvement_opportunity(player, current_gameboard):
     for c in player.full_color_sets_possessed:
         c_assets = current_gameboard['color_assets'][c]
         for asset in c_assets:
-            if can_asset_be_improved(asset,c_assets):
+            if can_asset_be_improved(asset,c_assets) and asset.price_per_house<=player.current_cash: # player must be able to afford the improvement
                 potentials.append((asset,asset_incremental_improvement_rent(asset)-asset.price_per_house))
     if potentials:
         sorted_potentials = sorted(potentials, key=lambda x: x[1], reverse=True) # sort in descending order
@@ -170,7 +170,7 @@ def identify_sale_opportunity_to_player(player, current_gameboard):
             continue
         if is_property_lone(player, a):
             for p in current_gameboard['players']:
-                if p == player:
+                if p == player or p.status == 'lost':
                     continue
                 elif will_property_complete_set(p, a, current_gameboard):
                     # we make an offer!

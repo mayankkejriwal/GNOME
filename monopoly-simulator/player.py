@@ -525,10 +525,10 @@ class Player(object):
         if len(self.mortgaged_assets) > 0:
             allowable_actions.add(free_mortgage)
 
-        if self.has_get_out_of_jail_chance_card or self.has_get_out_of_jail_community_chest_card:
+        if (self.has_get_out_of_jail_chance_card or self.has_get_out_of_jail_community_chest_card) and self.currently_in_jail:
             allowable_actions.add(use_get_out_of_jail_card)
 
-        if self.currently_in_jail:
+        if self.currently_in_jail and self.current_cash >= 50:
             allowable_actions.add(pay_jail_fine)
 
         if len(self.full_color_sets_possessed) > 0:

@@ -26,7 +26,7 @@ respective functions must adhere in their signatures to the examples here. The a
 
 """
 
-_agent_memory = None # for the agent's internal use only
+_agent_memory = dict() # for the agent's internal use only
 
 
 def make_pre_roll_move(player, current_gameboard, allowable_moves, code):
@@ -50,8 +50,10 @@ def make_pre_roll_move(player, current_gameboard, allowable_moves, code):
         param['player'] = player
         param['current_gameboard'] = current_gameboard
         if action_choices.use_get_out_of_jail_card in allowable_moves:
+            _agent_memory['previous_action'] = action_choices.use_get_out_of_jail_card
             return (action_choices.use_get_out_of_jail_card, param)
         elif action_choices.pay_jail_fine in allowable_moves:
+            _agent_memory['previous_action'] = action_choices.pay_jail_fine
             return (action_choices.pay_jail_fine, param)
 
     # if we ran the gamut, and did not return, then it's time to skip turn or conclude actions
@@ -89,17 +91,19 @@ def make_out_of_turn_move(player, current_gameboard, allowable_moves, code):
         elif player.current_cash-player.outstanding_property_offer['price'] >= current_gameboard['go_increment'] and \
             player.outstanding_property_offer['price']<=player.outstanding_property_offer['asset'].price:
             # 1. we can afford it, and it's at or below market rate so let's buy it
-
+            _agent_memory['previous_action'] = action_choices.accept_sell_property_offer
             return (action_choices.accept_sell_property_offer, param)
         elif agent_helper_functions.will_property_complete_set(player, player.outstanding_property_offer['asset'],current_gameboard):
             # 2. less affordable, but we stand to gain by monopoly
             if player.current_cash - player.outstanding_property_offer['price'] >= current_gameboard['go_increment']/2: # risky, but worth it
+                _agent_memory['previous_action'] = action_choices.accept_sell_property_offer
                 return (action_choices.accept_sell_property_offer, param)
 
     if player.status != 'current_move': # these actions are considered only if it's NOT our turn to roll the dice.
         if action_choices.improve_property in allowable_moves: # beef up full color sets to maximize rent potential.
             param = agent_helper_functions.identify_improvement_opportunity(player, current_gameboard)
             if param:
+                _agent_memory['previous_action'] = action_choices.improve_property
                 return (action_choices.improve_property, param)
 
         for m in player.mortgaged_assets:
@@ -107,8 +111,8 @@ def make_out_of_turn_move(player, current_gameboard, allowable_moves, code):
                 # free mortgages till we can afford it. the second condition should not be necessary but just in case.
                 param = dict()
                 param['player'] = player
-                param['current_gameboard'] = current_gameboard
                 param['asset'] = m
+                _agent_memory['previous_action'] = action_choices.free_mortgage
                 return (action_choices.free_mortgage, param)
 
 
@@ -120,7 +124,9 @@ def make_out_of_turn_move(player, current_gameboard, allowable_moves, code):
             # agent (which isn't us) may want to make sure cash reserves are high before rolling the dice. Similarly, a more opportunistic
             # agent may choose to make a sell offer even if cash reserves aren't too low.
                 param = agent_helper_functions.identify_sale_opportunity_to_player(player, current_gameboard)
-                if param:
+                if param and _agent_memory['previous_action'] != action_choices.make_sell_property_offer: # we only make one offer per turn. Otherwise we'd
+                    # be stuck in a loop
+                    _agent_memory['previous_action'] = action_choices.make_sell_property_offer
                     return (action_choices.make_sell_property_offer, param)
 
 
@@ -174,6 +180,7 @@ def make_post_roll_move(player, current_gameboard, allowable_moves, code):
         params['current_gameboard'] = current_gameboard
 
         if make_buy_property_decision(player, current_gameboard, params['asset']):
+            _agent_memory['previous_action'] = action_choices.buy_property
             return (action_choices.buy_property, params)
         else:
             # make_buy returned false, but is there still a chance?
@@ -182,15 +189,17 @@ def make_post_roll_move(player, current_gameboard, allowable_moves, code):
                 to_mortgage = agent_helper_functions.identify_potential_mortgage(player,current_location.price,True)
                 if to_mortgage:
                     params['asset'] = to_mortgage
+                    _agent_memory['previous_action'] = action_choices.mortgage_property
                     return (action_choices.mortgage_property, params)
 
                 else: # last chance.
                     to_sell = agent_helper_functions.identify_potential_sale(player, current_location.price,True)
                     if to_sell:
                         params['asset'] = to_sell
+                        _agent_memory['previous_action'] = action_choices.sell_property
                         return (action_choices.sell_property, params)
 
-    elif action_choices.concluded_actions in allowable_moves:
+    if action_choices.concluded_actions in allowable_moves:
         return (action_choices.concluded_actions, dict())
 
     else:
@@ -290,9 +299,10 @@ def handle_negative_cash_balance(player, current_gameboard):
     if mortgage_potentials and max_sum+player.current_cash >= 0: # if the second condition is not met, no point in mortgaging
         sorted_potentials = sorted(mortgage_potentials, key=lambda x: x[1])  # sort by mortgage in ascending order
         for p in sorted_potentials:
-            action_choices.mortgage_property(player, p[0], current_gameboard)
             if player.current_cash >= 0:
                 return 1 # we're done
+            action_choices.mortgage_property(player, p[0], current_gameboard)
+
 
     # if we got here, it means we're still in trouble. Next move is to sell unimproved properties. We don't check if
     # the total will cover our debts, since we're desperate at this point.
@@ -308,13 +318,16 @@ def handle_negative_cash_balance(player, current_gameboard):
     if sale_potentials: # if the second condition is not met, no point in mortgaging
         sorted_potentials = sorted(sale_potentials, key=lambda x: x[1])  # sort by mortgage in ascending order
         for p in sorted_potentials:
-            action_choices.sell_property(player, p[0], current_gameboard)
             if player.current_cash >= 0:
                 return 1 # we're done
+            action_choices.sell_property(player, p[0], current_gameboard)
 
+    count = 0
     # if we're STILL not done, then the only option is to start selling houses and hotels, if we have 'em
-    while player.num_total_houses > 0 or player.num_total_hotels > 0: # often times, a sale may not succeed due to uniformity requirements. We keep trying till everything is sold,
+    while (player.num_total_houses > 0 or player.num_total_hotels > 0) and count <3: # often times, a sale may not succeed due to uniformity requirements. We keep trying till everything is sold,
         # or cash balance turns non-negative.
+        count += 1 # there is a slim chance that it is impossible to sell an improvement unless the player does something first (e.g., replace 4 houses with a hotel).
+        # The count ensures we terminate at some point, regardless.
         for a in player.assets:
             if a.num_houses > 0:
                 action_choices.sell_house_hotel(player, a, current_gameboard,True, False)
@@ -326,7 +339,8 @@ def handle_negative_cash_balance(player, current_gameboard):
                     return 1  # we're done
 
     # final straw
-    for a in player.assets:
+    final_sale_assets = player.assets.copy()
+    for a in final_sale_assets:
         action_choices.sell_property(player, a, current_gameboard) # this could be refined further; we may be able to get away with a mortgage at this point.
         if player.current_cash >= 0:
             return 1  # we're done
@@ -351,7 +365,7 @@ def _build_decision_agent_methods_dict():
     return ans
 
 def _initialize_agent_memory():
-    _agent_memory = dict()
+    _agent_memory['previous_action'] = None
 
 
 decision_agent_methods = _build_decision_agent_methods_dict() # this is the main data structure that is needed by gameplay
