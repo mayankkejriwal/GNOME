@@ -20,7 +20,7 @@ def simulate_game_instance(game_elements, np_seed=4):
     game_elements['seed'] = np_seed
     game_elements['choice_function'] = np.random.choice
     num_die_rolls = 0
-    game_elements['go_increment'] = 20 # we should not be modifying this here. It is only for testing purposes.
+    # game_elements['go_increment'] = 20 # we should not be modifying this here. It is only for testing purposes.
     # One reason to modify go_increment is if your decision agent is not aggressively trying to monopolize. Since go_increment
     # by default is 200 it can lead to runaway cash increases for simple agents like ours.
 

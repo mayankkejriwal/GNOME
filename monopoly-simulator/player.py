@@ -635,6 +635,13 @@ class Player(object):
         current_gameboard['history']['return'].append(t)
 
         if action_to_execute == skip_turn:
+            if self.is_property_offer_outstanding:
+                # player is clearly unwilling to accept the offer, so we negate it
+                self.is_property_offer_outstanding = False
+                self.outstanding_property_offer['from_player'] = None
+                self.outstanding_property_offer['asset'] = None
+                self.outstanding_property_offer['price'] = -1
+
             return self._execute_action(action_to_execute, parameters, current_gameboard)
 
 
@@ -643,6 +650,12 @@ class Player(object):
 
         while True:  # currently, we set no limits on this; the assumption is that eventually the player will 'pass the baton'
             if action_to_execute == concluded_actions: # short of raising an exception, this is the only way to exit this function
+                if self.is_property_offer_outstanding:
+                    # player is clearly unwilling to accept the offer, so we negate it
+                    self.is_property_offer_outstanding = False
+                    self.outstanding_property_offer['from_player'] = None
+                    self.outstanding_property_offer['asset'] = None
+                    self.outstanding_property_offer['price'] = -1
                 return self._execute_action(action_to_execute, parameters, current_gameboard)
             else:
                 code = self._execute_action(action_to_execute, parameters, current_gameboard)
@@ -687,6 +700,12 @@ class Player(object):
         current_gameboard['history']['return'].append(t)
 
         if action_to_execute == skip_turn:
+            if self.is_property_offer_outstanding:
+                # player is clearly unwilling to accept the offer, so we negate it
+                self.is_property_offer_outstanding = False
+                self.outstanding_property_offer['from_player'] = None
+                self.outstanding_property_offer['asset'] = None
+                self.outstanding_property_offer['price'] = -1
             return self._execute_action(action_to_execute, parameters, current_gameboard)
 
         allowable_actions.add(concluded_actions)
@@ -694,6 +713,12 @@ class Player(object):
 
         while True:  # currently, we set no limits on this; the assumption is that eventually the player will 'pass the baton'
             if action_to_execute == concluded_actions:  # short of raising an exception, this is the only way to exit this function
+                if self.is_property_offer_outstanding:
+                    # player is clearly unwilling to accept the offer, so we negate it
+                    self.is_property_offer_outstanding = False
+                    self.outstanding_property_offer['from_player'] = None
+                    self.outstanding_property_offer['asset'] = None
+                    self.outstanding_property_offer['price'] = -1
                 return self._execute_action(action_to_execute, parameters, current_gameboard)
             else:
                 code = self._execute_action(action_to_execute, parameters, current_gameboard)
