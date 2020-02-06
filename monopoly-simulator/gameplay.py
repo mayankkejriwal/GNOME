@@ -20,7 +20,7 @@ def simulate_game_instance(game_elements, np_seed=4):
     game_elements['seed'] = np_seed
     game_elements['choice_function'] = np.random.choice
     num_die_rolls = 0
-    # game_elements['go_increment'] = 20 # we should not be modifying this here. It is only for testing purposes.
+    # game_elements['go_increment'] = 100 # we should not be modifying this here. It is only for testing purposes.
     # One reason to modify go_increment is if your decision agent is not aggressively trying to monopolize. Since go_increment
     # by default is 200 it can lead to runaway cash increases for simple agents like ours.
 
@@ -45,7 +45,9 @@ def simulate_game_instance(game_elements, np_seed=4):
         if current_player.make_pre_roll_moves(game_elements) == 2: # 2 is the special skip-turn code
             skip_turn += 1
         out_of_turn_player_index = current_player_index + 1
-        while skip_turn != num_active_players:
+        out_of_turn_count = 0
+        while skip_turn != num_active_players and out_of_turn_count<=200:
+            out_of_turn_count += 1
             # print 'checkpoint 1'
             out_of_turn_player = game_elements['players'][out_of_turn_player_index%len(game_elements['players'])]
             if out_of_turn_player.status == 'lost':
@@ -150,7 +152,7 @@ def simulate_game_instance(game_elements, np_seed=4):
 
         current_player_index = (current_player_index+1)%len(game_elements['players'])
 
-        if diagnostics.max_cash_balance(game_elements) > 30000: # this is our limit for runaway cash for testing purposes only.
+        if diagnostics.max_cash_balance(game_elements) > 300000: # this is our limit for runaway cash for testing purposes only.
                                                                  # We print some diagnostics and return if any player exceeds this.
             diagnostics.print_asset_owners(game_elements)
             diagnostics.print_player_cash_balances(game_elements)
@@ -178,8 +180,11 @@ def set_up_board(game_schema_file_path, player_decision_agents):
 # control any number of players you like, and assign the rest to the simple agent. We plan to release a more sophisticated
 # but still relatively simple agent soon.
 player_decision_agents = dict()
-for p in ['player_1','player_2','player_3']:
-    player_decision_agents[p] = simple_decision_agent_1.decision_agent_methods
+# for p in ['player_1','player_3']:
+#     player_decision_agents[p] = simple_decision_agent_1.decision_agent_methods
+player_decision_agents['player_1'] = background_agent_v1.decision_agent_methods
+player_decision_agents['player_2'] = background_agent_v1.decision_agent_methods
+player_decision_agents['player_3'] = background_agent_v1.decision_agent_methods
 player_decision_agents['player_4'] = background_agent_v1.decision_agent_methods
 game_elements = set_up_board('/Users/mayankkejriwal/git-projects/GNOME/monopoly_game_schema_v1-2.json',
                              player_decision_agents)

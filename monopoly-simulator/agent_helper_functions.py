@@ -195,6 +195,8 @@ def can_asset_be_improved(asset, same_color_assets):
     asset under the assumption that the asset, and all other assets of that color, belong to one player. We also do
     not check here whether the game board is in an incorrect state (i.e. if somehow the uniform development rule
     has been violated).
+
+    We are also not checking affordability of the improvement since the player is not specified.
     :param asset:
     :param same_color_assets:
     :return:
