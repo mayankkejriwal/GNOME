@@ -98,6 +98,21 @@ REMINDERS:
 
 UPDATES:
 
+February 5, 2020:
+
+--A background agent that is significantly more advanced than the previous simple decision agent has been added, along with
+some agent helper functions in a separate file. When building your own agent, you should make use of the helper file as
+a guide only, since some elements are strategic rather than logical (e.g., how to decide which property we should sell
+to another player) and can be done in other (probably more optimal) ways. 
+
+--To ensure the game continues without a single player having the ability to 'hang' things up, we have instituted limits
+on (i) how many actions you are allowed to take in pre/post/out-of-turn moves before you are forced to conclude actions
+(currently 50), and (ii) how many out-of-turn 'rounds' we allow before we force the current player to roll the dice
+and enter post-roll. Currently it is set at 200. We believe these limits are more than adequate to ensure that players
+have the opportunity to take all moves they may want to take before passing the baton. Currently, the game ends within
+150-500 die rolls, and does not enter into a runaway state. This is due to aggressive trading on the part of the
+background agents. 
+
 January 27, 2020:
 
 --We've added a 'history' facility (a dict) to the game_elements data structure (also called current_gameboard in much of the
