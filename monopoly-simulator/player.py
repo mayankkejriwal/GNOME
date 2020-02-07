@@ -100,6 +100,11 @@ class Player(object):
         current_gameboard['history']['param'].append(params)
         current_gameboard['history']['return'].append(None)
 
+        self.num_total_houses = 0
+        self.num_total_hotels = 0
+        self.num_utilities_possessed = 0
+        self.num_railroads_possessed = 0
+
         self.currently_in_jail = False
         self.outstanding_property_offer['from_player'] = None
         self.outstanding_property_offer['asset'] = None
