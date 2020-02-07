@@ -152,8 +152,6 @@ def make_out_of_turn_move(player, current_gameboard, allowable_moves, code):
             param = agent_helper_functions.identify_sale_opportunity_to_player(player, current_gameboard)
             if param and player._agent_memory['previous_action'] != action_choices.make_sell_property_offer:  # we only make one offer per turn. Otherwise we'd
                 # be stuck in a loop
-                if param['price'] < param['to_player'].current_cash/2:
-                    param['price'] = param['to_player'].current_cash / 2 # how far would you go for a monopoly?
                 print player.player_name, ': I am making an offer to sell ', param['asset'].name, ' to ', param[
                     'to_player'].player_name, 'for '+str(param['price'])+' dollars'
                 player._agent_memory['previous_action'] = action_choices.make_sell_property_offer

@@ -179,7 +179,12 @@ def identify_sale_opportunity_to_player(player, current_gameboard):
                     param['asset'] = a
                     param['to_player'] = p
                     param['price'] = a.price*1.5 # 50% markup on market price.
-                    potentials.append((param,a.price*1.5))
+                    if param['price'] < param['to_player'].current_cash / 2:
+                        param['price'] = param['to_player'].current_cash / 2  # how far would you go for a monopoly?
+                    elif param['price'] > param['to_player'].current_cash:
+                        # no point offering this to the player; they don't have money.
+                        continue
+                    potentials.append((param, param['price']))
 
     if not potentials:
         return None
