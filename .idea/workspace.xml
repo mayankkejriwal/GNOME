@@ -2,15 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fea55e94-bf28-45df-b270-f75fb7fa8bd5" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/GNOME.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/GNOME.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/monopoly-simulator/action_choices.py" beforeDir="false" afterPath="$PROJECT_DIR$/monopoly-simulator/action_choices.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/monopoly-simulator/agent_helper_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/monopoly-simulator/agent_helper_functions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/monopoly-simulator/background_agent_v1.py" beforeDir="false" afterPath="$PROJECT_DIR$/monopoly-simulator/background_agent_v1.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/monopoly-simulator/gameplay.py" beforeDir="false" afterPath="$PROJECT_DIR$/monopoly-simulator/gameplay.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/monopoly-simulator/location.py" beforeDir="false" afterPath="$PROJECT_DIR$/monopoly-simulator/location.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/monopoly-simulator/player.py" beforeDir="false" afterPath="$PROJECT_DIR$/monopoly-simulator/player.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -21,11 +13,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="gameplay.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="gameplay.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/monopoly-simulator/gameplay.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="405">
-              <caret line="27" column="48" lean-forward="true" selection-start-line="27" selection-start-column="48" selection-end-line="27" selection-end-column="48" />
+            <state relative-caret-position="223">
+              <caret line="49" column="34" lean-forward="true" selection-start-line="49" selection-start-column="34" selection-end-line="49" selection-end-column="34" />
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -36,8 +28,8 @@
       <file leaf-file-name="action_choices.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/monopoly-simulator/action_choices.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="349">
-              <caret line="335" column="17" lean-forward="true" selection-start-line="335" selection-start-column="17" selection-end-line="335" selection-end-column="17" />
+            <state relative-caret-position="5025">
+              <caret line="335" column="17" selection-start-line="335" selection-start-column="17" selection-end-line="335" selection-end-column="17" />
             </state>
           </provider>
         </entry>
@@ -45,22 +37,35 @@
       <file leaf-file-name="location.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/monopoly-simulator/location.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="136">
-              <caret line="67" column="40" lean-forward="true" selection-start-line="67" selection-start-column="40" selection-end-line="67" selection-end-column="40" />
+            <state relative-caret-position="1005">
+              <caret line="67" column="40" selection-start-line="67" selection-start-column="40" selection-end-line="67" selection-end-column="40" />
             </state>
           </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="simple_decision_agent_1.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/monopoly-simulator/simple_decision_agent_1.py">
-          <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
       <file leaf-file-name="monopoly-game-schema.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/monopoly-game-schema.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="278">
+            <state relative-caret-position="355">
               <caret line="455" column="34" selection-start-line="455" selection-start-column="34" selection-end-line="455" selection-end-column="34" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="monopoly-novelty-schema.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/monopoly-novelty-schema.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="41">
+              <caret line="34" lean-forward="true" selection-start-line="34" selection-end-line="34" />
+              <folding>
+                <element signature="e#1696#2470#0" />
+                <element signature="e#2524#4282#0" />
+                <element signature="e#4315#4671#0" />
+                <element signature="e#4720#7886#0" />
+                <element signature="e#7926#11694#0" />
+                <element signature="e#12524#12706#0" />
+                <element signature="e#12756#27713#0" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -68,8 +73,8 @@
       <file leaf-file-name="player.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/monopoly-simulator/player.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="15">
-              <caret line="698" selection-start-line="698" selection-end-line="698" />
+            <state relative-caret-position="11100">
+              <caret line="741" selection-start-line="741" selection-end-line="741" />
             </state>
           </provider>
         </entry>
@@ -77,8 +82,8 @@
       <file leaf-file-name="background_agent_v1.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/monopoly-simulator/background_agent_v1.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="160">
-              <caret line="102" column="33" selection-start-line="102" selection-start-column="26" selection-end-line="102" selection-end-column="33" />
+            <state relative-caret-position="1710">
+              <caret line="115" column="33" selection-start-line="115" selection-start-column="33" selection-end-line="115" selection-end-column="33" />
               <folding>
                 <element signature="e#0#21#0" expanded="true" />
               </folding>
@@ -89,7 +94,7 @@
       <file leaf-file-name="agent_helper_functions.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/monopoly-simulator/agent_helper_functions.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="835">
+            <state relative-caret-position="2580">
               <caret line="172" column="51" selection-start-line="172" selection-start-column="51" selection-end-line="172" selection-end-column="51" />
             </state>
           </provider>
@@ -121,14 +126,15 @@
         <option value="$PROJECT_DIR$/monopoly-simulator/background_agent_v1.py" />
         <option value="$PROJECT_DIR$/monopoly-simulator/action_choices.py" />
         <option value="$PROJECT_DIR$/monopoly-simulator/gameplay.py" />
+        <option value="$PROJECT_DIR$/monopoly-novelty-schema.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
     <option name="x" value="18" />
-    <option name="y" value="23" />
+    <option name="y" value="43" />
     <option name="width" value="1623" />
-    <option name="height" value="921" />
+    <option name="height" value="930" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -158,6 +164,11 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
+  </component>
   <component name="RunDashboard">
     <option name="ruleStates">
       <list>
@@ -170,7 +181,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.gameplay">
+  <component name="RunManager" selected="Python.monopoly-novelty-schema">
     <configuration name="gameplay" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="GNOME" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -207,12 +218,32 @@
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
+    <configuration name="monopoly-novelty-schema" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="GNOME" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/monopoly-novelty-schema.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
     <list>
       <item itemvalue="Python.monopoly-game-schema" />
       <item itemvalue="Python.gameplay" />
+      <item itemvalue="Python.monopoly-novelty-schema" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.monopoly-novelty-schema" />
         <item itemvalue="Python.gameplay" />
         <item itemvalue="Python.monopoly-game-schema" />
       </list>
@@ -232,15 +263,15 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="18" y="23" width="1623" height="921" extended-state="0" />
+    <frame x="18" y="43" width="1623" height="930" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49940968" visible="true" weight="0.17963314" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49940968" visible="true" weight="0.18153068" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="right" id="R Packages" order="3" />
       <window_info anchor="right" id="R Graphics" order="3" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32160193" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.087635055" />
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Python Console" order="7" weight="0.3288835" />
       <window_info id="Structure" order="1" sideWeight="0.5005903" side_tool="true" weight="0.16983524" />
@@ -259,7 +290,67 @@
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
   </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <option name="time" value="1" />
+    </breakpoint-manager>
+  </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/monopoly-simulator/gameplay.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="300">
+          <caret line="27" column="48" lean-forward="true" selection-start-line="27" selection-start-column="48" selection-end-line="27" selection-end-column="48" />
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/monopoly-simulator/action_choices.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5025">
+          <caret line="335" column="17" lean-forward="true" selection-start-line="335" selection-start-column="17" selection-end-line="335" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/monopoly-simulator/location.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1005">
+          <caret line="67" column="40" lean-forward="true" selection-start-line="67" selection-start-column="40" selection-end-line="67" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/monopoly-game-schema.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="6825">
+          <caret line="455" column="34" selection-start-line="455" selection-start-column="34" selection-end-line="455" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/monopoly-simulator/player.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="10455">
+          <caret line="698" selection-start-line="698" selection-end-line="698" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/monopoly-simulator/background_agent_v1.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1515">
+          <caret line="102" column="33" selection-start-line="102" selection-start-column="26" selection-end-line="102" selection-end-column="33" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/monopoly-simulator/agent_helper_functions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2580">
+          <caret line="172" column="51" selection-start-line="172" selection-start-column="51" selection-end-line="172" selection-end-column="51" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/monopoly-simulator/gameplay.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="420">
@@ -363,34 +454,24 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/monopoly-simulator/simple_decision_agent.py" />
-    <entry file="file://$PROJECT_DIR$/monopoly-simulator/simple_decision_agent_1.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/monopoly-game-schema.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="278">
-          <caret line="455" column="34" selection-start-line="455" selection-start-column="34" selection-end-line="455" selection-end-column="34" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/monopoly-simulator/location.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="67" column="40" lean-forward="true" selection-start-line="67" selection-start-column="40" selection-end-line="67" selection-end-column="40" />
+        <state relative-caret-position="1005">
+          <caret line="67" column="40" selection-start-line="67" selection-start-column="40" selection-end-line="67" selection-end-column="40" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/monopoly-simulator/player.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15">
-          <caret line="698" selection-start-line="698" selection-end-line="698" />
+        <state relative-caret-position="11100">
+          <caret line="741" selection-start-line="741" selection-end-line="741" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/monopoly-simulator/background_agent_v1.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="160">
-          <caret line="102" column="33" selection-start-line="102" selection-start-column="26" selection-end-line="102" selection-end-column="33" />
+        <state relative-caret-position="1710">
+          <caret line="115" column="33" selection-start-line="115" selection-start-column="33" selection-end-line="115" selection-end-column="33" />
           <folding>
             <element signature="e#0#21#0" expanded="true" />
           </folding>
@@ -399,24 +480,50 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/monopoly-simulator/agent_helper_functions.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="835">
+        <state relative-caret-position="2580">
           <caret line="172" column="51" selection-start-line="172" selection-start-column="51" selection-end-line="172" selection-end-column="51" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/monopoly-simulator/action_choices.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="349">
-          <caret line="335" column="17" lean-forward="true" selection-start-line="335" selection-start-column="17" selection-end-line="335" selection-end-column="17" />
+        <state relative-caret-position="5025">
+          <caret line="335" column="17" selection-start-line="335" selection-start-column="17" selection-end-line="335" selection-end-column="17" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/monopoly-simulator/gameplay.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
-          <caret line="27" column="48" lean-forward="true" selection-start-line="27" selection-start-column="48" selection-end-line="27" selection-end-column="48" />
+        <state relative-caret-position="223">
+          <caret line="49" column="34" lean-forward="true" selection-start-line="49" selection-start-column="34" selection-end-line="49" selection-end-column="34" />
           <folding>
             <element signature="e#0#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/monopoly-game-schema.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="355">
+          <caret line="455" column="34" selection-start-line="455" selection-start-column="34" selection-end-line="455" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/monopoly_novelty_schema_v1.json">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/monopoly-novelty-schema.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="41">
+          <caret line="34" lean-forward="true" selection-start-line="34" selection-end-line="34" />
+          <folding>
+            <element signature="e#1696#2470#0" />
+            <element signature="e#2524#4282#0" />
+            <element signature="e#4315#4671#0" />
+            <element signature="e#4720#7886#0" />
+            <element signature="e#7926#11694#0" />
+            <element signature="e#12524#12706#0" />
+            <element signature="e#12756#27713#0" />
           </folding>
         </state>
       </provider>
