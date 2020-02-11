@@ -33,11 +33,12 @@ def specify_board_state():
     # note that we will not be introducing 'new' colors i.e. when a color changes (whether on a full block or an individual property), it will be to one of
     # the colors that currently exists in the game schema.
 
-    board_state['location_free_mortgage_rule'] = ['default', 'ten_percent_total_mortgage_outstanding', 'change_percentage'] # these are Level 2 attribute novelties at the contingent sub-level
+    board_state['location_free_mortgage_rule'] = ['default', 'percent of_total_mortgage_outstanding', 'change_percentage'] # these are Level 2 attribute novelties at the contingent sub-level
     # recall, the default rule simply says that to free the mortgage on a property you have to pay the principle (mortgage field on that property) + 10% of principle
-    # change percentage will change the percent from 10% to a range of [1,5,20,40,70]. The lower end makes it cheaper to mortgage, the higher end more expensive to do so.
-    # ten_percent_total_mortgage_outstanding will keep the default percentage (10) but instead of computing it against the mortgage to be freed, will calculate
-    # against the total mortgages outstanding. Think of it as a way to discourage the agent from taking on too much debt all at once.
+    # change percentage will change the percent from 10% to a range of [1,5,10,20,40,70]. The lower end makes it cheaper to mortgage, the higher end more expensive to do so.
+    # percent_of_total_mortgage_outstanding will compute interest against the total outstanding mortgage rather than just the mortgage to be freed (see google
+    # slides for an example we've provided). Think of it as a way to discourage the agent from taking on too much debt all at once. The percent can vary, again from
+    # the range of [1,5,10,20,40,70].
 
     #populate die
     board_state['die'] = _specify_die_state()
