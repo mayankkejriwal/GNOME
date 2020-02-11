@@ -29,6 +29,15 @@ def specify_board_state():
 
     board_state['reorder_location_sequence'] = ['default', 'color_reordering', 'global_reordering']
 
+    board_state['location_colors'] = ['default','map_property_set_to_color', 'map_property_to_color', 'exchange_colors_between_properties'] # color novelty at the attribute level.
+    # note that we will not be introducing 'new' colors i.e. when a color changes (whether on a full block or an individual property), it will be to one of
+    # the colors that currently exists in the game schema.
+
+    board_state['location_free_mortgage_rule'] = ['default', 'ten_percent_total_mortgage_outstanding', 'change_percentage'] # these are Level 2 attribute novelties at the contingent sub-level
+    # recall, the default rule simply says that to free the mortgage on a property you have to pay the principle (mortgage field on that property) + 10% of principle
+    # change percentage will change the percent from 10% to a range of [1,5,20,40,70]. The lower end makes it cheaper to mortgage, the higher end more expensive to do so.
+    # ten_percent_total_mortgage_outstanding will keep the default percentage (10) but instead of computing it against the mortgage to be freed, will calculate
+    # against the total mortgages outstanding. Think of it as a way to discourage the agent from taking on too much debt all at once.
 
     #populate die
     board_state['die'] = _specify_die_state()
@@ -118,41 +127,41 @@ def _build_community_chest_card_details():
     get_out_of_jail_free = {'action':'set_get_out_of_jail_card_status', 'name':'get_out_of_jail_free', 'card_type':'contingent_movement', 'num':1}
     cards.append(get_out_of_jail_free)
 
-    sale_of_stock = {'action':'bank_cash_transaction', 'name':'sale_of_stock', 'card_type':'positive_cash_from_bank', 'amount':50, 'num':1}
+    sale_of_stock = {'action':'bank_cash_transaction', 'name':'sale_of_stock', 'card_type':'positive_cash_from_bank', 'amount':[200,150,100,50], 'num':1}
     cards.append(sale_of_stock)
 
-    bank_error = {'action':'bank_cash_transaction', 'name':'bank_error', 'card_type':'positive_cash_from_bank', 'amount':200, 'num':1}
+    bank_error = {'action':'bank_cash_transaction', 'name':'bank_error', 'card_type':'positive_cash_from_bank', 'amount':[100,200,300,400,500], 'num':1}
     cards.append(bank_error)
 
-    doctor_fee = {'action':'bank_cash_transaction', 'name':'doctor_fee', 'card_type':'negative_cash_from_bank', 'amount':-50, 'num':1}
+    doctor_fee = {'action':'bank_cash_transaction', 'name':'doctor_fee', 'card_type':'negative_cash_from_bank', 'amount':[-200,-150,-100,-50], 'num':1}
     cards.append(doctor_fee)
 
     advance_to_go = {'action':'move_player', 'name':'advance_to_go', 'card_type':'movement', 'destination':'Go', 'num':1}
     cards.append(advance_to_go)
 
     grand_opera_night = {'action':'player_cash_transaction', 'name':'grand_opera_night', 'card_type':'positive_cash_from_players',
-                         'amount_per_player':50, 'num':1}
+                         'amount_per_player':[200,150,100,50], 'num':1}
     cards.append(grand_opera_night)
 
-    holiday_fund_matures = {'action':'bank_cash_transaction', 'name':'holiday_fund_matures', 'card_type':'positive_cash_from_bank', 'amount':100, 'num':1}
+    holiday_fund_matures = {'action':'bank_cash_transaction', 'name':'holiday_fund_matures', 'card_type':'positive_cash_from_bank', 'amount':[100,200,300,400,500], 'num':1}
     cards.append(holiday_fund_matures)
 
-    income_tax_refund = {'action':'bank_cash_transaction', 'name':'income_tax_refund', 'card_type':'positive_cash_from_bank', 'amount':20, 'num':1}
+    income_tax_refund = {'action':'bank_cash_transaction', 'name':'income_tax_refund', 'card_type':'positive_cash_from_bank', 'amount':[20,40,60,80,100,150,200], 'num':1}
     cards.append(income_tax_refund)
 
-    birthday = {'action':'player_cash_transaction', 'name':'birthday', 'card_type':'positive_cash_from_players', 'amount_per_player':10, 'num':1}
+    birthday = {'action':'player_cash_transaction', 'name':'birthday', 'card_type':'positive_cash_from_players', 'amount_per_player':[10,30,50,70,100,150,200], 'num':1}
     cards.append(birthday)
 
-    life_insurance_matures = {'action':'bank_cash_transaction', 'name':'life_insurance_matures', 'card_type':'positive_cash_from_bank', 'amount':100, 'num':1}
+    life_insurance_matures = {'action':'bank_cash_transaction', 'name':'life_insurance_matures', 'card_type':'positive_cash_from_bank', 'amount':[100,200,300,400,500], 'num':1}
     cards.append(life_insurance_matures)
 
-    hospital_fee = {'action':'bank_cash_transaction', 'name':'hospital_fee', 'card_type':'negative_cash_from_bank', 'amount':-50, 'num':1}
+    hospital_fee = {'action':'bank_cash_transaction', 'name':'hospital_fee', 'card_type':'negative_cash_from_bank', 'amount':[-200,-150,-100,-50], 'num':1}
     cards.append(hospital_fee)
 
-    school_fee = {'action':'bank_cash_transaction', 'name':'school_fee', 'card_type':'negative_cash_from_bank', 'amount':-50, 'num':1}
+    school_fee = {'action':'bank_cash_transaction', 'name':'school_fee', 'card_type':'negative_cash_from_bank', 'amount':[-200,-150,-100,-50], 'num':1}
     cards.append(school_fee)
 
-    consultancy_fee = {'action':'bank_cash_transaction', 'name':'consultancy_fee', 'card_type':'positive_cash_from_bank', 'amount':25, 'num':1}
+    consultancy_fee = {'action':'bank_cash_transaction', 'name':'consultancy_fee', 'card_type':'positive_cash_from_bank', 'amount':[25,50,75,100,150,300], 'num':1}
     cards.append(consultancy_fee)
 
     street_repairs = {'action':'contingent_bank_cash_transaction', 'name':'street_repairs',
@@ -160,10 +169,10 @@ def _build_community_chest_card_details():
                       'contingency':'calculate_street_repair_cost', 'num':1}
     cards.append(street_repairs)
 
-    win_beauty_contest = {'action':'bank_cash_transaction', 'name':'win_beauty_contest', 'card_type':'positive_cash_from_bank', 'amount':10, 'num':1}
+    win_beauty_contest = {'action':'bank_cash_transaction', 'name':'win_beauty_contest', 'card_type':'positive_cash_from_bank', 'amount':[10,30,50,70,100,150,200], 'num':1}
     cards.append(win_beauty_contest)
 
-    inherit_money = {'action':'bank_cash_transaction', 'name':'inherit_money', 'card_type':'positive_cash_from_bank', 'amount':100, 'num':1}
+    inherit_money = {'action':'bank_cash_transaction', 'name':'inherit_money', 'card_type':'positive_cash_from_bank', 'amount':[100,200,300,400,500], 'num':1}
     cards.append(inherit_money)
 
     # Number novelty: community chest cards
@@ -213,7 +222,7 @@ def _build_chance_card_details():
     cards.append(go_to_nearest_railroad_pay_double)
 
     bank_dividend = {'action': 'bank_cash_transaction', 'name': 'bank_dividend', 'card_type': 'positive_cash_from_bank',
-                  'amount': 50, 'num':1}
+                  'amount': [10,30,50,70,100,150,200], 'num':1}
     cards.append(bank_dividend)
 
     general_repairs = {'action': 'contingent_bank_cash_transaction', 'name': 'general_repairs',
@@ -236,21 +245,21 @@ def _build_chance_card_details():
     cards.append(go_to_boardwalk)
 
     pay_poor_tax = {'action': 'bank_cash_transaction', 'name': 'pay_poor_tax', 'card_type': 'negative_cash_from_bank',
-                    'amount': -15, 'num': 1}
+                    'amount': [-15,-30,-50,-100,-200], 'num': 1}
     cards.append(pay_poor_tax)
 
     building_loan_matures = {'action': 'bank_cash_transaction', 'name': 'building_loan_matures', 'card_type': 'positive_cash_from_bank',
-                     'amount': 150, 'num': 1}
+                     'amount': [50,150,250,450,600], 'num': 1}
     cards.append(building_loan_matures)
 
     win_crossword_competition = {'action': 'bank_cash_transaction', 'name': 'win_crossword_competition',
                              'card_type': 'positive_cash_from_bank',
-                             'amount': 100, 'num': 1}
+                             'amount': [50, 100,150,200,300,500], 'num': 1}
     cards.append(win_crossword_competition)
 
     elected_board_chairman = {'action': 'player_cash_transaction', 'name': 'elected_board_chairman',
                          'card_type': 'negative_cash_from_players',
-                         'amount_per_player': -50, 'num': 1}
+                         'amount_per_player': [-50,-100,-200,-300], 'num': 1}
     cards.append(elected_board_chairman)
 
     # Number novelty: chance cards
@@ -492,8 +501,8 @@ def _build_individual_location_details():
                                    'owned_by':['bank', 'player_1', 'player_2', 'player_3', 'player_4']}
 
     # Tax
-    ans['Income Tax'] = {'name': 'Income Tax', 'color': 'None', 'loc_class': 'tax', 'amount_due':200}
-    ans['Luxury Tax'] = {'name': 'Luxury Tax', 'color': 'None', 'loc_class': 'tax', 'amount_due':100}
+    ans['Income Tax'] = {'name': 'Income Tax', 'color': 'None', 'loc_class': 'tax', 'amount_due':[100,200,400,700]}
+    ans['Luxury Tax'] = {'name': 'Luxury Tax', 'color': 'None', 'loc_class': 'tax', 'amount_due':[50,100,200,300,400,500,600]}
 
     # Do Nothing
     ans['Go'] = {'name': 'Go', 'color': 'None', 'loc_class': 'do_nothing'}
@@ -508,8 +517,53 @@ def _build_individual_location_details():
     ans['Go to Jail'] = {'name': 'Go to Jail', 'color': 'None', 'loc_class': 'action',
                               'perform_action': 'go_to_jail'}
 
+    # introduce attribute novelty for price/mortgage on houses
+    for k, v in ans.items():
+        if 'price' in v:
+            if 'mortgage' not in v: # just making sure
+                raise Exception
+            else:
+                new_price = list()
+                new_price.append(v['price'])
+                new_price.append(v['price']/2)
+                new_price.append(v['price'] * 2)
+                new_price.append(v['price'] * 3)
+                new_price.append(v['price'] * 4)
+
+                new_mortgage = list()
+                new_mortgage.append(v['mortgage'])
+                new_mortgage.append(v['mortgage'] / 2)
+                new_mortgage.append(v['mortgage'] * 2)
+                new_mortgage.append(v['mortgage'] * 3)
+                new_mortgage.append(v['mortgage'] * 4)
+
+                v['price'] = new_price
+                v['mortgage'] = new_mortgage
+
+                if v['loc_class'] == 'real_estate':
+
+                    v['rent'] = _build_novelty_list(v['rent'])
+                    v['price_per_house'] = _build_novelty_list(v['price_per_house'])
+                    v['rent_1_house'] = _build_novelty_list(v['rent_1_house'])
+                    v['rent_2_houses'] = _build_novelty_list(v['rent_2_houses'])
+                    v['rent_3_houses'] = _build_novelty_list(v['rent_3_houses'])
+                    v['rent_4_houses'] = _build_novelty_list(v['rent_4_houses'])
+                    v['rent_hotel'] = _build_novelty_list(v['rent_hotel'])
+
+
 
     return ans
+
+
+def _build_novelty_list(base_num):
+    ans_list = list()
+    ans_list.append(base_num)
+    ans_list.append(base_num / 2)
+    ans_list.append(base_num * 2)
+    ans_list.append(base_num * 3)
+    ans_list.append(base_num * 4)
+
+    return ans_list
 
 board_state = dict()
 specify_board_state()
