@@ -62,20 +62,20 @@ def make_pre_roll_move(player, current_gameboard, allowable_moves, code):
     # if we ran the gamut, and did not return, then it's time to skip turn or conclude actions
     if action_choices.skip_turn in allowable_moves:
         # testing hypothetical simulator (will comment when done testing)
-        player_decision_agents = dict()
-        import simple_decision_agent_1
-        player_decision_agents['player_1'] = simple_decision_agent_1.decision_agent_methods # the reason I am doing this for all agents is to avoid infinite loops.
-        player_decision_agents['player_2'] = simple_decision_agent_1.decision_agent_methods
-        player_decision_agents['player_3'] = simple_decision_agent_1.decision_agent_methods
-        player_decision_agents['player_4'] = simple_decision_agent_1.decision_agent_methods
-        alternate_univ = hypothetical_simulator.initialize_hypothetical_universe(current_gameboard, player_decision_agents)
-        print player.player_name,' has spawned alternate universe to try out things.'
-        hypothetical_winner = hypothetical_simulator.simulate_hypothetical_game(hypothetical_gameboard=alternate_univ,
-                                die_roll_substitute=hypothetical_simulator.die_roll_substitute,num_total_die_rolls=15) # we will only run for fifteen die rolls.
-        if hypothetical_winner is None:
-            print diagnostics.print_player_cash_balances(alternate_univ)
-        else:
-            print hypothetical_winner.player_name
+        # player_decision_agents = dict()
+        # import simple_decision_agent_1
+        # player_decision_agents['player_1'] = simple_decision_agent_1.decision_agent_methods # the reason I am doing this for all agents is to avoid infinite loops.
+        # player_decision_agents['player_2'] = simple_decision_agent_1.decision_agent_methods
+        # player_decision_agents['player_3'] = simple_decision_agent_1.decision_agent_methods
+        # player_decision_agents['player_4'] = simple_decision_agent_1.decision_agent_methods
+        # alternate_univ = hypothetical_simulator.initialize_hypothetical_universe(current_gameboard, player_decision_agents)
+        # print player.player_name,' has spawned alternate universe to try out things.'
+        # hypothetical_winner = hypothetical_simulator.simulate_hypothetical_game(hypothetical_gameboard=alternate_univ,
+        #                         die_roll_substitute=hypothetical_simulator.die_roll_substitute,num_total_die_rolls=15) # we will only run for fifteen die rolls.
+        # if hypothetical_winner is None:
+        #     print diagnostics.print_player_cash_balances(alternate_univ)
+        # else:
+        #     print hypothetical_winner.player_name
         print player.player_name, ': I am skipping turn'
         player._agent_memory['previous_action'] = action_choices.skip_turn
         return (action_choices.skip_turn, dict())
