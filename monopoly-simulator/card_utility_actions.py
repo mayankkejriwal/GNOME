@@ -33,7 +33,7 @@ def pick_card_from_community_chest(player, current_gameboard):
     :return: None
     """
     print player.player_name,' is picking card from community chest.'
-    card = current_gameboard['choice_function'](list(current_gameboard['community_chest_cards']))
+    card = current_gameboard['cc_choice_function'](list(current_gameboard['community_chest_cards']))
     print player.player_name,' picked card ',card.name
     if card.name == 'get_out_of_jail_free':
         print 'removing get_out_of_jail card from community chest pack'
@@ -58,7 +58,7 @@ def pick_card_from_chance(player, current_gameboard):
     :return: None
     """
     print player.player_name, ' is picking card from chance.'
-    card = current_gameboard['choice_function'](list(current_gameboard['chance_cards']))
+    card = current_gameboard['chance_choice_function'](list(current_gameboard['chance_cards']))
     print player.player_name, ' picked card ', card.name
     if card.name == 'get_out_of_jail_free':
         print 'removing get_out_of_jail card from chance pack'

@@ -1,3 +1,5 @@
+
+
 def will_property_complete_set(player, asset, current_gameboard):
     """
 
