@@ -3,7 +3,7 @@ from action_choices import roll_die
 import numpy as np
 from card_utility_actions import move_player_after_die_roll
 import background_agent_v1
-import simple_decision_agent_1
+# import simple_decision_agent_1
 import json
 import diagnostics
 

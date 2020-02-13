@@ -79,6 +79,15 @@ class Player(object):
         self._agent_memory = dict() # a scratchpad for the agent behind this player.
 
 
+    def change_decision_agent(self, handle_negative_cash_balance, make_pre_roll_move, make_out_of_turn_move, make_post_roll_move, make_buy_property_decision, make_bid):
+        self.handle_negative_cash_balance = handle_negative_cash_balance
+        self.make_pre_roll_move = make_pre_roll_move
+        self.make_out_of_turn_move = make_out_of_turn_move
+        self.make_post_roll_move = make_post_roll_move
+        self.make_buy_property_decision = make_buy_property_decision
+        self.make_bid = make_bid
+
+
     def begin_bankruptcy_proceedings(self, current_gameboard):
         """
         Begin bankruptcy proceedings and set the player's status to lost. All assets will be discharged back to the bank,
