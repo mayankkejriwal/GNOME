@@ -4,7 +4,7 @@ either correspond to an action or contingency contained in a card (e.g., go to j
 when we land on an 'action' location (such as community chest, wherein we must pick a card from the community chest
 card pack)
 """
-
+import numpy as np
 
 def go_to_jail(player, current_gameboard):
     """
@@ -33,7 +33,9 @@ def pick_card_from_community_chest(player, current_gameboard):
     :return: None
     """
     print player.player_name,' is picking card from community chest.'
-    card = current_gameboard['cc_choice_function'](list(current_gameboard['community_chest_cards']))
+    card_rand = np.random.RandomState(current_gameboard['card_seed'])
+    card = card_rand.choice(list(current_gameboard['community_chest_cards']))
+    current_gameboard['card_seed'] += 1
     print player.player_name,' picked card ',card.name
     if card.name == 'get_out_of_jail_free':
         print 'removing get_out_of_jail card from community chest pack'
@@ -58,7 +60,9 @@ def pick_card_from_chance(player, current_gameboard):
     :return: None
     """
     print player.player_name, ' is picking card from chance.'
-    card = current_gameboard['chance_choice_function'](list(current_gameboard['chance_cards']))
+    card_rand = np.random.RandomState(current_gameboard['card_seed'])
+    card = card_rand.choice(list(current_gameboard['chance_cards']))
+    current_gameboard['card_seed'] += 1
     print player.player_name, ' picked card ', card.name
     if card.name == 'get_out_of_jail_free':
         print 'removing get_out_of_jail card from chance pack'
