@@ -24,6 +24,22 @@ def go_to_jail(player, current_gameboard):
     current_gameboard['history']['return'].append(None)
 
 
+def _set_to_sorted_list_func(set_cards):
+    cc_card_dict = dict()
+    while len(set_cards) != 0:
+        popped_card = set_cards.pop()
+        try:
+            cc_card_dict[str(popped_card.name)].append(popped_card)
+        except:
+            cc_card_dict[str(popped_card.name)] = [popped_card]
+    list_cards = []
+
+    for sorted_key in sorted(cc_card_dict):   #sorts dictionary based on dict keys
+        for j in range(len(cc_card_dict[sorted_key])):
+            list_cards.append(cc_card_dict[sorted_key][j])
+    return list_cards
+
+
 def pick_card_from_community_chest(player, current_gameboard):
     """
     Pick the card  from the community chest pack and execute the action
@@ -34,7 +50,10 @@ def pick_card_from_community_chest(player, current_gameboard):
     """
     print player.player_name,' is picking card from community chest.'
     card_rand = np.random.RandomState(current_gameboard['card_seed'])
-    card = card_rand.choice(list(current_gameboard['community_chest_cards']))
+    set_cc_cards_copy = current_gameboard['community_chest_cards'].copy()
+    list_community_chest_cards = _set_to_sorted_list_func(set_cc_cards_copy)
+    card = card_rand.choice(list_community_chest_cards)
+    # card = card_rand.choice(list(current_gameboard['community_chest_cards']))
     current_gameboard['card_seed'] += 1
     print player.player_name,' picked card ',card.name
     if card.name == 'get_out_of_jail_free':
@@ -61,7 +80,10 @@ def pick_card_from_chance(player, current_gameboard):
     """
     print player.player_name, ' is picking card from chance.'
     card_rand = np.random.RandomState(current_gameboard['card_seed'])
-    card = card_rand.choice(list(current_gameboard['chance_cards']))
+    set_chance_cards_copy = current_gameboard['chance_cards'].copy()
+    list_chance_cards = _set_to_sorted_list_func(set_chance_cards_copy)
+    card = card_rand.choice(list_chance_cards)
+    # card = card_rand.choice(list(current_gameboard['chance_cards']))
     current_gameboard['card_seed'] += 1
     print player.player_name, ' picked card ', card.name
     if card.name == 'get_out_of_jail_free':

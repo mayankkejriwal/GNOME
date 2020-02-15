@@ -8,7 +8,7 @@ import json
 import diagnostics
 
 
-def simulate_game_instance(game_elements, np_seed=4):
+def simulate_game_instance(game_elements, np_seed=6):
     """
     Simulate a game instance.
     :param game_elements: The dict output by set_up_board
