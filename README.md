@@ -8,24 +8,13 @@ The entry point for the simulator is gameplay.py and can be run on the command l
 
 $ python gameplay.py > game-log.txt
 
-The simulator currently relies on Python 2.7.x. Because inheritance has a different syntax between 2.7 and 3, we will
-need to release a different version if you really like 3. This can be accomplished relatively easily, but for now, we recommend
-setting up a 2.7 interpreter and running the code therein.
+The simulator currently relies on Python 2.7.x. Because inheritance has a different syntax between 2.7 and 3, you should use the repository https://github.com/mayankkejriwal/GNOME-p3 if you are using Python 3. For this current package, we recommend setting up a 2.7 interpreter and running the code therein.
 
-You could also choose to print the log on the command line. We've found the log to be very useful in providing a human
-readable version of game events. When debugging a decision agent, these logs are your friend. If you succeed in running
-the game off the shelf, you should get a log that looks somewhat (though probably not exactly) like game-1-log.txt
+We print out a log that tracks the game at a fairly detailed level. The prints are routed to stdout by default, but you could pipe them to a file if you want to retain a file log. 
 
-To run the simulator, you need a decision agent and the game schema. We have provided the schema already in the outer folder,
-although you will have to specify the path to the schema once you clone this repo on your own system. In gameplay, we
-also have to specify the numpy seed (currently a default is set) and if we want, we can modify elements of the game schema
-for testing purposes. For simple agents that do not try to monopolize, we recommend modifying go_increment to avoid
-runaway cash increases from the bank to the players.
+To run the simulator, you need to assign a decision agent to each of the four players and the game schema. We have provided the schema already (monopoly_game_schema_v1-2.json) in the outer folder, although you will have to specify the path to the schema once you clone this repo on your own system. In gameplay, we also have to specify the numpy seed (currently a default is set) and if we want, we can modify elements of the game schema for testing purposes. For simple agents that do not try to monopolize or trade, we recommend modifying go_increment to avoid runaway cash increases from the bank to the players.
 
-We have provided an example 'dummy' decision agent to guide you on how to build out your own decision agent. We plan
-to release at least one sophisticated decision agent sometime in January, and the baseline agent used in evaluations
-will also be a rule-based, sophisticated decision maker who weighs the state of the board carefully before deciding
-what to do.
+We have provided two example decision agents to guide you on how to build out your own decision agent; the code also shows how to assign these agents to players. Currently, one of the decision agents is a simply 'dummy' agent, while the other is a 'background' agent that will be assigned to three of the four players during evaluations. The former is very simplistic, and often leads to cash runaway increases. The latter, though simple, is capable of monopolizing and trading and plays the game fairly well. Sometime in March, we will release the baseline agent used in our novelty evaluations, which will also be a rule-based, sophisticated decision maker who weighs the state of the board carefully before deciding what to do.
 
 The code has been fairly well documented, and we've done a lot of testing on it. That does not mean it's completely clear
 or that mistakes might not appear. On our part, we are continuously running tests but if you see something that's unclear
@@ -36,9 +25,6 @@ GAME SCHEMA:
 The current version of the schema, generated using monopoly-game-schema.py is monopoly_game_schema_v1-2.json. We provide
 _v1-1.json for comparison only. It should not be used in the game. Here's a succinct version of some of the more
 important changes in going from v1-1 to v1-2:
-
-
-Updates from v1-1 to v1-2:
 
 --In location_states, we have changed 'class' to 'loc_class'. The reason is (and we should have realized it earlier)
 that class is a reserved word in Python.
@@ -83,20 +69,23 @@ from me due to a card draw, and I have low cash). Because the chances are so sma
 that player to take action just yet but once it's his turn, he'll have to deal with the negative cash before he can
 conclude his turn (or declare bankruptcy)
 
---the 'player' objects now have some additional fields that will be useful for keeping track of the game state.
+--the 'player' objects now have some additional fields that will be useful for keeping track of the game state. In general, we have continued to refine and update the player data structure to ensure the game plays smoothly, quickly and in a well-defined manner.
 
 --I've added 'mortgage_property', 'improve_property' to the list of functions that are allowed in out_of_turn moves.
 'bid_on_property' has been removed. The reason is that currently, the only way you can bid on a property is at auction,
 which is conducted by the bank as a special process when a player refuses to buy a property on which he/she has
 landed. So you can't really 'choose' to bid in an out_of_turn move; instead, you can bid only in a player's
 post-roll phase.
-
-
+ 
 REMINDERS:
 
 --it IS possible to sell a mortgaged property
 
-UPDATES:
+GENERAL UPDATES:
+
+February 15, 2020:
+
+--We have released the first version of the novelty schema in the outer folder. The novelty generator that uses this schema to inject novelty into the game will be released within February. 
 
 February 5, 2020:
 
