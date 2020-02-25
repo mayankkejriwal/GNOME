@@ -30,7 +30,8 @@ import bank
 
 
 class Test(object):
-    def __init__(self):
+    def __init__(self, a):
+        self.a = a
         pass
 
     def test_method(self, a, b):
@@ -40,8 +41,11 @@ class Test(object):
         print self.test_method(1,2)
 
 
-g = Test()
-print g.test_method(1,2)
+# g = Test(1)
+# print g.a
+# att = getattr(g, 'a')
+# g.att = 2
+# print g.att
 
-k = bank.Bank()
-print 'bank.Bank' in str(type(k))
+# k = bank.Bank()
+# print 'bank.Bank' in str(type(k))
