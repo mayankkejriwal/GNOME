@@ -127,3 +127,4 @@ class CashFromPlayersCard(Card):
         """
         super(CashFromPlayersCard, self).__init__(action, card_type, name)
         self.amount_per_player = amount_per_player
+

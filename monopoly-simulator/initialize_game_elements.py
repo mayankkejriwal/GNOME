@@ -11,6 +11,7 @@ from card_utility_actions import * # functions from this module will be used in 
 import sys
 from player import Player
 import card
+import copy
 
 
 def initialize_board(game_schema, player_decision_agents):
@@ -216,7 +217,7 @@ def _initialize_cards(game_elements, game_schema):
             print 'community chest card type is not recognized: ', specific_card['card_type']
             raise Exception
 
-        community_chest_card_objects[card_obj.name] = card_obj
+        community_chest_card_objects[card_obj.name] = copy.deepcopy(card_obj)
 
     if len(community_chest_cards) != game_schema['cards']['community_chest']['card_count']:
         print 'community chest card count and number of items in community chest card set are inconsistent'
@@ -286,7 +287,7 @@ def _initialize_cards(game_elements, game_schema):
             print 'chance card type is not recognized: ', specific_card['card_type']
             raise Exception
 
-        chance_card_objects[card_obj.name] = card_obj
+        chance_card_objects[card_obj.name] = copy.deepcopy(card_obj)
 
     if len(chance_cards) != game_schema['cards']['chance']['card_count']:
         print 'chance card count and number of items in chance card set are inconsistent'
