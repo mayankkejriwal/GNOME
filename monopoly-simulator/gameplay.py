@@ -6,6 +6,7 @@ import background_agent_v1
 # import simple_decision_agent_1
 import json
 import diagnostics
+import novelty_generator
 
 
 def simulate_game_instance(game_elements, np_seed=6):
@@ -173,6 +174,21 @@ def simulate_game_instance(game_elements, np_seed=6):
     return
 
 
+def inject_class_novelty_1(current_gameboard, novelty_schema=None):
+    """
+    Function for illustrating how we inject novelty
+    :param current_gameboard: the current gameboard into which novelty will be injected. This gameboard will be modified
+    :return: None
+    """
+    numberDieNovelty = novelty_generator.NumberClassNovelty()
+    numberDieNovelty.die_novelty(current_gameboard, 4, die_state_vector=[[1,2,3,4,5],[1,2,3,4],[5,6,7,8,9],[10,11,12,13,14]])
+
+    classDieNovelty = novelty_generator.TypeClassNovelty()
+    die_state_distribution_vector = ['uniform','uniform','biased','biased']
+    die_type_vector = ['consecutive','consecutive','consecutive','consecutive']
+    classDieNovelty.die_novelty(current_gameboard, die_state_distribution_vector, die_type_vector)
+
+
 def set_up_board(game_schema_file_path, player_decision_agents):
     game_schema = json.load(open(game_schema_file_path, 'r'))
     return initialize_game_elements.initialize_board(game_schema, player_decision_agents)
@@ -190,6 +206,7 @@ player_decision_agents['player_3'] = background_agent_v1.decision_agent_methods
 player_decision_agents['player_4'] = background_agent_v1.decision_agent_methods
 game_elements = set_up_board('/Users/mayankkejriwal/git-projects/GNOME/monopoly_game_schema_v1-2.json',
                              player_decision_agents)
+inject_class_novelty_1(game_elements)
 simulate_game_instance(game_elements)
 
 #just testing history.
