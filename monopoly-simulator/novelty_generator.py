@@ -278,6 +278,20 @@ class TypeClassNovelty(ClassNovelty):
             current_gameboard['dies'][i].die_state_distribution = die_state_distribution_vector[i]
             current_gameboard['dies'][i].die_type = die_type_vector[i]
 
+        for die in current_gameboard['dies']:
+            if die.die_type == 'even_only':
+                new_die_state = list()
+                for i in die.die_state:
+                    if i%2 == 0:
+                        new_die_state.append(i)
+                die.die_state = new_die_state
+            elif die.die_type == 'odd_only':
+                new_die_state = list()
+                for i in die.die_state:
+                    if i % 2 != 0:
+                        new_die_state.append(i)
+                die.die_state = new_die_state
+
     def card_novelty(self, current_gameboard, community_chest_cards_contingency, chance_cards_contingency):
         """
 

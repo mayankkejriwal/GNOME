@@ -37,7 +37,7 @@ def write_history_to_file(game_board, workbook):
     workbook.close()
     print("History logged into history_log.xlsx file.")
 
-def simulate_game_instance(game_elements, np_seed=6, history_log_file=None):
+def simulate_game_instance(game_elements, history_log_file=None, np_seed=6):
     """
     Simulate a game instance.
     :param game_elements: The dict output by set_up_board
@@ -210,6 +210,10 @@ def inject_class_novelty_1(current_gameboard, novelty_schema=None):
     """
     Function for illustrating how we inject novelty
     :param current_gameboard: the current gameboard into which novelty will be injected. This gameboard will be modified
+    :param novelty_schema: the novelty schema json, read in from file. It is more useful for running experiments at scale
+    rather than in functions like these. For the most part, we advise writing your novelty generation routines, just like
+    we do below, and for using the novelty schema for informational purposes (i.e. for making sense of the novelty_generator.py
+    file and its functions.
     :return: None
     """
     numberDieNovelty = novelty_generator.NumberClassNovelty()
@@ -230,8 +234,6 @@ def set_up_board(game_schema_file_path, player_decision_agents):
 # control any number of players you like, and assign the rest to the simple agent. We plan to release a more sophisticated
 # but still relatively simple agent soon.
 player_decision_agents = dict()
-# for p in ['player_1','player_3']:
-#     player_decision_agents[p] = simple_decision_agent_1.decision_agent_methods
 player_decision_agents['player_1'] = background_agent_v1.decision_agent_methods
 player_decision_agents['player_2'] = background_agent_v1.decision_agent_methods
 player_decision_agents['player_3'] = background_agent_v1.decision_agent_methods
@@ -240,6 +242,7 @@ game_elements = set_up_board('/Users/mayankkejriwal/git-projects/GNOME/monopoly_
                              player_decision_agents)
 # inject_class_novelty_1(game_elements)
 simulate_game_instance(game_elements)
+
 
 #just testing history.
 # print len(game_elements['history']['function'])

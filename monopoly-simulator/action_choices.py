@@ -1,4 +1,4 @@
-def free_mortgage(player, asset, current_gameboard=None):
+def free_mortgage(player, asset, current_gameboard):
     """
     Action for freeing player's mortgage on asset.
     :param player: A Player instance.
@@ -483,7 +483,16 @@ def roll_die(die_objects, choice):
     :return:
     """
     print 'rolling die...'
-    return [choice(a=d.die_state) for d in die_objects]
+    output_vector = list()
+    for d in die_objects:
+        if d.die_state_distribution == 'uniform':
+            output_vector.append(choice(a=d.die_state))
+        elif d.die_state_distribution == 'biased':
+            output_vector.append(_biased_die_roll_1(d.die_state, choice))
+        else:
+            raise Exception
+
+    return output_vector
 
 
 def buy_property(player, asset, current_gameboard):
@@ -565,6 +574,14 @@ def buy_property(player, asset, current_gameboard):
         current_gameboard['history']['return'].append(None)
 
         return 1
+
+
+def _biased_die_roll_1(die_state, choice):
+    p = list()
+    die_total = sum(die_state)
+    for i in die_state:
+        p.append(i*1.0/die_total)
+    return choice(a=die_state, p=p)
 
 
 

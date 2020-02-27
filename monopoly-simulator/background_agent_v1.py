@@ -146,6 +146,7 @@ def make_out_of_turn_move(player, current_gameboard, allowable_moves, code):
                 param = dict()
                 param['player'] = player
                 param['asset'] = m
+                param['current_gameboard'] = current_gameboard
                 print player.player_name, ': I am going to free mortgage on ', param['asset'].name
                 player._agent_memory['previous_action'] = action_choices.free_mortgage
                 return (action_choices.free_mortgage, param)
