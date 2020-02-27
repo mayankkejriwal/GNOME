@@ -1,3 +1,5 @@
+
+
 def alternate_contingency_function_1(player, card, current_gameboard):
     """
     This function has the exact signature as calculate_street_repair_cost.

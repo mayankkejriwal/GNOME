@@ -1,4 +1,4 @@
-def free_mortgage(player, asset):
+def free_mortgage(player, asset, current_gameboard=None):
     """
     Action for freeing player's mortgage on asset.
     :param player: A Player instance.
@@ -13,11 +13,11 @@ def free_mortgage(player, asset):
     elif asset.is_mortgaged is False or asset not in player.mortgaged_assets: # the or is unnecessary but serves as a check
         print asset.name,'  is not mortgaged to begin with','. Returning -1'
         return -1
-    elif player.current_cash <= 1.1 * asset.mortgage:
+    elif player.current_cash <= asset.calculate_mortgage_owed(asset, current_gameboard):
         print player.player_name,' does not have cash to free mortgage on asset ',asset.name,'. Returning -1'
         return -1
     else:
-        player.charge_player(1.1 * asset.mortgage)
+        player.charge_player(asset.calculate_mortgage_owed(asset, current_gameboard))
         print player.player_name,"Player has paid down mortgage with interest. Setting status of asset to unmortgaged, and removing asset from player's mortgaged set"
         asset.is_mortgaged = False
         player.mortgaged_assets.remove(asset)

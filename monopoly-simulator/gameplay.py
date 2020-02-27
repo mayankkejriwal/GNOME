@@ -7,9 +7,37 @@ import background_agent_v1
 import json
 import diagnostics
 import novelty_generator
+import xlsxwriter
 
+def write_history_to_file(game_board, workbook):
+    worksheet = workbook.add_worksheet()
+    col = 0
+    for key in game_board['history']:
+        if key=='param':
+            col += 1
+            row = 0
+            worksheet.write(row, col, key)
+            worksheet.write(row, col+1, 'current_player')
+            for item in game_board['history'][key]:
+                worksheet.write(row+1, col, str(item))
+                try:
+                    worksheet.write(row+1, col+1, item['player'].player_name)
+                except:
+                    pass
+                row += 1
+            col+=1
 
-def simulate_game_instance(game_elements, np_seed=6):
+        else:
+            col += 1
+            row = 0
+            worksheet.write(row, col, key)
+            for item in game_board['history'][key]:
+                worksheet.write(row+1, col, str(item))
+                row += 1
+    workbook.close()
+    print("History logged into history_log.xlsx file.")
+
+def simulate_game_instance(game_elements, np_seed=6, history_log_file=None):
     """
     Simulate a game instance.
     :param game_elements: The dict output by set_up_board
@@ -32,6 +60,9 @@ def simulate_game_instance(game_elements, np_seed=6):
     current_player_index = 0
     num_active_players = 4
     winner = None
+    workbook = None
+    if history_log_file:
+        workbook = xlsxwriter.Workbook(history_log_file)
 
     while num_active_players > 1:
         current_player = game_elements['players'][current_player_index]
@@ -160,7 +191,8 @@ def simulate_game_instance(game_elements, np_seed=6):
             diagnostics.print_asset_owners(game_elements)
             diagnostics.print_player_cash_balances(game_elements)
             return
-
+    if workbook:
+        write_history_to_file(game_elements, workbook)
     # let's print some numbers
     print 'printing final asset owners: '
     diagnostics.print_asset_owners(game_elements)
@@ -206,7 +238,7 @@ player_decision_agents['player_3'] = background_agent_v1.decision_agent_methods
 player_decision_agents['player_4'] = background_agent_v1.decision_agent_methods
 game_elements = set_up_board('/Users/mayankkejriwal/git-projects/GNOME/monopoly_game_schema_v1-2.json',
                              player_decision_agents)
-inject_class_novelty_1(game_elements)
+# inject_class_novelty_1(game_elements)
 simulate_game_instance(game_elements)
 
 #just testing history.

@@ -6,6 +6,28 @@ card pack)
 """
 import numpy as np
 
+def calculate_mortgage_owed(mortgaged_property, current_gameboard):
+    """
+    calculate the mortgage owed on mortgaged_property
+    :param current_gameboard: the current gameboard. not used in this function, but the signature is important because of the novelty generator
+    which could use other information from the player (like total debt) and the gameboard besides just the info in mortgaged_property.
+    :param mortgaged_property: a property instance that is mortgaged
+    :return:
+    """
+    if not mortgaged_property.is_mortgaged:
+        raise Exception
+    else:
+        if current_gameboard['bank'].total_mortgage_rule is False:
+            return (1.0+current_gameboard['bank'].mortgage_percentage) * mortgaged_property.mortgage
+        else:
+            # to avoid passing in a player object, I am going to use the owner of the mortgaged_property as the player whose
+            # total debt outstanding we have to compute the mortgage against.
+            player = mortgaged_property.owned_by
+            total = 0
+            for a in player.mortgaged_assets:
+                total += ((1.0+current_gameboard['bank'].mortgage_percentage)*a.mortgage)
+            return total
+
 def go_to_jail(player, current_gameboard):
     """
     The player will be moved to jail. The player will not receive go_increment, even if they pass go.
