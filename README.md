@@ -1,4 +1,4 @@
-
+We have stopped updating this simulator since March 16, 2020. Please use the GNOME-p3 agent for the latest updates and improvements. 
 
 MONOPOLY SIMULATOR:
 
